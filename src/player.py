@@ -20,3 +20,11 @@ class Player:
         if not gender:
             return 'Man'
         return gender
+
+    def toJSON(self):
+        json = {
+            'name': self.name,
+            'colour': self.colour,
+            'gender': self.gender,
+        }
+        return json

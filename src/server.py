@@ -20,13 +20,15 @@ class MonopolyServerProtocol(WebSocketServerProtocol):
         payload = payload.decode('utf8')
         payload = payload.split('|')
         action = payload[0]
+        print(f'PROCESSING ACTION: {action}')
 
         if action == 'ADD_PLAYER':
             data = json.loads(payload[1])
             self.factory.add_player(data, self)
 
-        # msg = "{} from {}".format(payload.decode('utf8'), self.peer)
-        # self.factory.broadcast(msg)
+        if action == 'MESSAGE':
+            msg = "{} from {}".format(payload[1], self.peer)
+            self.factory.send_message(msg)
 
         # payload = payload.decode('utf-8')
         # print('Message received: {0}'.format(payload))
@@ -54,18 +56,21 @@ class MonopolyServerFactory(WebSocketServerFactory):
         if client not in self.clients:
             self.clients.append(client)
 
-    def add_player(self, player_info, client):
-        if client.peer not in self.players:
-            player = Player(index = self.num_players + 1, **player_info)
-            self.players[client.peer] = player
-            self.num_players += 1
-            self.broadcast('Player Added')
-
     def unregister_client(self, client):
         if client in self.clients:
             print("unregistered client {}".format(client.peer))
             self.clients.remove(client)
             self.players.pop(client.peer, None)
+
+    def add_player(self, player_info, client):
+        # if client.peer not in self.players:
+        player = Player(index = self.num_players + 1, **player_info)
+        self.players[client.peer] = player
+        self.num_players += 1
+        self.broadcast('PLAYER_ADDED|' + json.dumps(player.toJSON()))
+
+    def send_message(self, msg):
+        self.broadcast('MESSAGE|' + msg)
 
     def broadcast(self, msg):
         print("broadcasting prepared message '{}' ..".format(msg))
