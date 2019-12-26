@@ -1,25 +1,30 @@
 from autobahn.asyncio.websocket import WebSocketServerFactory
 from autobahn.asyncio.websocket import WebSocketServerProtocol
+from monopoly import Monopoly
 
 import asyncio
+import ssl
 
 
-class MyServerProtocol(WebSocketServerProtocol):
+class MonopolyServerProtocol(WebSocketServerProtocol):
 
     def onConnect(self, request):
-        print("Client connecting: {0}".format(request.peer))
+        print('Client connecting: {0}'.format(request.peer))
+        print('Initializing monopoly')
+        self.monopoly = Monopoly()
 
     def onOpen(self):
         print("WebSocket connection open.")
 
     def onMessage(self, payload, isBinary):
-        if isBinary:
-            print("Binary message received: {0} bytes".format(len(payload)))
-        else:
-            print("Text message received: {0}".format(payload.decode('utf8')))
-
-        # echo back message verbatim
-        self.sendMessage(payload, isBinary)
+        payload = payload.decode('utf-8')
+        print('Message received: {0}'.format(payload))
+        if payload == 'UPDATE_CREDIT':
+            self.monopoly.credit += 100
+        if payload == 'CLEAR_CREDIT':
+            self.monopoly.credit = 0
+        print('Current credit: {0}'.format(self.monopoly.credit))
+        self.sendMessage(str(self.monopoly.credit).encode('utf-8'), isBinary)
 
     def onClose(self, wasClean, code, reason):
         print("WebSocket connection closed: {0}".format(reason))
@@ -28,10 +33,16 @@ class MyServerProtocol(WebSocketServerProtocol):
 if __name__ == '__main__':
 
     factory = WebSocketServerFactory()
-    factory.protocol = MyServerProtocol
+    factory.protocol = MonopolyServerProtocol
+
+    sslcontext = ssl.SSLContext(ssl.PROTOCOL_SSLv23)
+    sslcontext.load_cert_chain(
+        '/etc/httpd/certificates/niticras.crt',
+        '/etc/httpd/certificates/niticras.key',
+    )
 
     loop = asyncio.get_event_loop()
-    coro = loop.create_server(factory, '0.0.0.0', 9000)
+    coro = loop.create_server(factory, '0.0.0.0', 9000, ssl=sslcontext)
     server = loop.run_until_complete(coro)
 
     try:
