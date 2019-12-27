@@ -5,7 +5,7 @@ logger = logging.getLogger('monopoly.server')
 logger.setLevel(logging.DEBUG)
 
 handler_stream = logging.StreamHandler()
-handler_file = logging.FileHandler('file.log')
+handler_file = logging.FileHandler('/opt/Monopoly/monopoly.server/logs/server.log')
 handler_stream.setLevel(logging.DEBUG)
 handler_file.setLevel(logging.DEBUG)
 
