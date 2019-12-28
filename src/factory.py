@@ -20,7 +20,6 @@ class Factory(WebSocketServerFactory):
 
     def unregister_client(self, client):
         if client in self.clients:
-            print("unregistered client {}".format(client.peer))
             self.clients.remove(client)
             self.players.pop(client.peer, None)
 
@@ -31,12 +30,16 @@ class Factory(WebSocketServerFactory):
         self.num_players += 1
         self.broadcast('PLAYER_ADDED|' + json.dumps(player.toJSON()))
 
-    def send_message(self, msg):
-        self.broadcast('MESSAGE|' + msg)
+    def send_message(self, message, sender):
+        response = {
+            'action': 'MESSAGE',
+            'status': 'ok',
+            'message': message,
+            'from': sender,
+        }
+        self.broadcast(json.dumps(response).encode('utf-8'))
 
-    def broadcast(self, msg):
-        print("broadcasting prepared message '{}' ..".format(msg))
+    def broadcast(self, response):
         for c in self.clients:
-            preparedMsg = self.prepareMessage(msg.encode('utf-8'))
+            preparedMsg = self.prepareMessage(response)
             c.sendPreparedMessage(preparedMsg)
-            print("prepared message sent to {}".format(c.peer))

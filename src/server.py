@@ -7,18 +7,20 @@ import signal
 
 
 PORT = 9000
+TRUST_X_FORWARDED_FOR = 1
 
 
 def process_signal(signal_number, frame):
     raise SystemExit('Exiting')
 
 
-def start_server():
+def run_server():
     logger.info('Starting the server')
     signal.signal(signal.SIGTERM, process_signal)
 
     factory = Factory()
     factory.protocol = Protocol
+    factory.setProtocolOptions(trustXForwardedFor=TRUST_X_FORWARDED_FOR)
 
     try:
         loop = asyncio.get_event_loop()
@@ -45,4 +47,4 @@ def start_server():
 
 
 if __name__ == '__main__':
-    start_server()
+    run_server()
