@@ -1,28 +1,38 @@
 from autobahn.asyncio.websocket import WebSocketServerProtocol
 from log import logger
+from log import log_exceptions
 from player import Player
 
 import json
 
 
-# Client STATUS
-AWAITING_TURN = 0
-ACTIVE_TURN = 1
+# Player STATUS
+STARTING = 0
+AWAITING = 1
+ACTIVE = 2
+ENDED = 3
 
 
 class Protocol(WebSocketServerProtocol):
 
-    def onConnect(self, request):
-         logger.info(f'CLIENT: {request.peer} ==> Connecting')
+    PLAYER_STATUS = STARTING
 
+    # Events
+    @log_exceptions
+    def onConnect(self, request):
+        logger.info(f'CLIENT: {request.peer} ==> Connecting')
+
+    @log_exceptions
     def onOpen(self):
         logger.info(f'CLIENT: {self.peer} ==> Opened')
         self.open_client()
 
+    @log_exceptions
     def onClose(self, wasClean, code, reason):
         logger.info(f'CLIENT: {self.peer} ==> Closed')
         self.close_client()
 
+    @log_exceptions
     def onMessage(self, payload, isBinary):
         try:
             logger.info(f'CLIENT: {self.peer} ==> Socket message')
@@ -30,37 +40,27 @@ class Protocol(WebSocketServerProtocol):
             self.process_message(payload)
         except ValueError:
             response = {
-                'status': 'error',
+                'action': 'ERROR',
                 'reason': 'The message must be JSON',
             }
             logger.warning(f'CLIENT: {self.peer} ==> Socket message error')
             self.sendMessage(json.dumps(response).encode('utf-8'))
 
+    # Logic
+    def change_player_status(self, status):
+        self.PLAYER_STATUS = status
+
     def open_client(self):
-        self.factory.register_client(self)
-        self.client_status = AWAITING_TURN
-        self.player = Player(index = self.factory.num_players)
+        self.player = Player(index = self.factory.num_clients + 1)
         self.send_client_info()
-        self.send_player_action(self.player.name, 'PLAYER_CONNECTED')
+        self.factory.register_client(self)
 
     def close_client(self):
         self.factory.unregister_client(self)
-        self.send_player_action(self.player.name, 'PLAYER_DISCONNECTED')
-
-    def send_player_action(self, name, action):
-        response = {
-            'action': action,
-            'status': 'ok',
-            'name': self.player.name,
-            'colour': self.player.colour,
-            'gender': self.player.gender,
-        }
-        self.factory.broadcast(json.dumps(response).encode('utf-8'))
 
     def send_client_info(self):
         response = {
             'action': 'PLAYER_INFO',
-            'status': 'ok',
             'uid': self.player.UID,
             'name': self.player.name,
             'colour': self.player.colour,
@@ -79,7 +79,7 @@ class Protocol(WebSocketServerProtocol):
     def default_action(self, payload):
         logger.warning(f'CLIENT: {self.peer} ==> Unknown or missing action')
         response = {
-            'status': 'error',
+            'action': 'ERROR',
             'reason': 'Unknown action',
         }
         self.sendMessage(json.dumps(response).encode('utf-8'))
@@ -92,7 +92,6 @@ class Protocol(WebSocketServerProtocol):
     def send_message(self, message):
         response = {
             'action': 'MESSAGE',
-            'status': 'ok',
             'message': message,
             'name': self.player.name,
             'colour': self.player.colour,
@@ -131,7 +130,6 @@ class Protocol(WebSocketServerProtocol):
     def send_updated_player(self, previous_info, current_info):
         response = {
             'action': 'PLAYER_UPDATED',
-            'status': 'ok',
             'previous': previous_info,
             'current': current_info,
         }

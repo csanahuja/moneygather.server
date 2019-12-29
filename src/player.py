@@ -12,6 +12,7 @@ class Player:
         self.colour = self.assign_colour(colour)
         self.gender = self.assign_gender(gender)
         self.credit = credit
+        self.position = 0
 
     def assign_name(self, name, index):
         if not name:
