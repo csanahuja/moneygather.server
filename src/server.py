@@ -1,3 +1,4 @@
+from contextlib import suppress
 from log import logger
 from protocol import Protocol
 from factory import Factory
@@ -38,12 +39,20 @@ def run_server():
         logger.info('SERVER: running')
         loop.run_forever()
     except KeyboardInterrupt:
-        logger.info('SERVER: closed by KeyboardInterrupt')
+        logger.info('SERVER: Shutting down by KeyboardInterrupt')
     except SystemExit:
-        logger.info('SERVER: closed by SystemExit')
+        logger.info('SERVER: Shutting down by SystemExit')
     finally:
+        logger.info('SERVER: Closing pending tasks')
+        pending_tasks = asyncio.all_tasks(loop=loop)
+        for task in pending_tasks:
+            task.cancel()
+            with suppress(asyncio.CancelledError):
+                loop.run_until_complete(task)
+
         server.close()
         loop.close()
+        logger.info('SERVER: Closed')
 
 
 if __name__ == '__main__':
