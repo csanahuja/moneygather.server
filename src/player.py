@@ -6,7 +6,14 @@ DEFAULT_GENDER = 'ghost'
 
 class Player:
 
-    def __init__(self, index, name=None, colour=None, gender=None, credit=1000):
+    def __init__(
+        self,
+        index,
+        name=None,
+        colour=None,
+        gender=None,
+        credit=1000,
+    ):
         self.UID = str(uuid.uuid4())
         self.name = self.assign_name(name, index)
         self.colour = self.assign_colour(colour)

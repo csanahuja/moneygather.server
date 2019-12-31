@@ -14,7 +14,6 @@ STARTED = 2
 
 class Factory(WebSocketServerFactory):
 
-
     def __init__(self):
         super().__init__()
         self.clients = []
@@ -30,10 +29,10 @@ class Factory(WebSocketServerFactory):
     @property
     def num_clients(self):
         return len(self.clients)
-    
+
     def register_client(self, client):
         if self.status != NOT_STARTED:
-            client.sendClose(code = 3000, reason='Game already started')
+            client.sendClose(code=3000, reason='Game already started')
         elif client not in self.clients:
             self.clients.append(client)
             self.monopoly.add_player(client.player)
@@ -55,12 +54,12 @@ class Factory(WebSocketServerFactory):
         self.broadcast(json.dumps(response).encode('utf-8'))
 
     def client_is_ready(self):
-        self.clients_ready += 1;
+        self.clients_ready += 1
         if self.clients_ready == 4:
             self.starting_game()
 
     def client_is_not_ready(self):
-        self.clients_ready -= 1;
+        self.clients_ready -= 1
 
     def starting_game(self):
         logger.info('SERVER ==> Starting game')

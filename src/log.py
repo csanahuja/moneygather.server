@@ -7,7 +7,8 @@ logger = logging.getLogger('monopoly.server')
 logger.setLevel(logging.DEBUG)
 
 handler_stream = logging.StreamHandler()
-handler_file = logging.FileHandler('/opt/Monopoly/monopoly.server/logs/server.log')
+handler_file = logging.FileHandler(
+    '/opt/Monopoly/monopoly.server/logs/server.log')
 handler_stream.setLevel(logging.DEBUG)
 handler_file.setLevel(logging.DEBUG)
 
@@ -23,7 +24,10 @@ logger.addHandler(handler_file)
 
 
 def handle_exception(exc_type, exc_value, exc_traceback):
-    logger.error("EXCEPTION:", exc_info=(exc_type, exc_value, exc_traceback))
+    logger.error(
+        "EXCEPTION:",
+        exc_info=(exc_type, exc_value, exc_traceback),
+    )
 
 
 sys.excepthook = handle_exception

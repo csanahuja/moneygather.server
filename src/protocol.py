@@ -19,22 +19,22 @@ class Protocol(WebSocketServerProtocol):
     # Events
     @log_exceptions
     def onConnect(self, request):
-        logger.info(f'CLIENT: {request.peer} ==> Connecting')
+        self.log('info', 'Connecting')
 
     @log_exceptions
     def onOpen(self):
-        logger.info(f'CLIENT: {self.peer} ==> Opened')
+        self.log('info', 'Opened')
         self.open_client()
 
     @log_exceptions
     def onClose(self, wasClean, code, reason):
-        logger.info(f'CLIENT: {self.peer} ==> Closed: Code {code} Reason: {reason}')
+        self.log('info', f'Closed: Code {code} Reason: {reason}')
         self.close_client()
 
     @log_exceptions
     def onMessage(self, payload, isBinary):
         try:
-            logger.info(f'CLIENT: {self.peer} ==> Socket message')
+            self.log('info', 'Socket message')
             payload = json.loads(payload.decode('utf8'))
             self.process_message(payload)
         except ValueError:
@@ -42,10 +42,10 @@ class Protocol(WebSocketServerProtocol):
                 'action': 'ERROR',
                 'reason': 'The message must be JSON',
             }
-            logger.warning(f'CLIENT: {self.peer} ==> Socket message error')
+            self.log('warning', 'Socket message error')
             self.sendMessage(json.dumps(response).encode('utf-8'))
 
-    # Logic
+    # Class logic
     @property
     def status(self):
         return self.PLAYER_STATUS
@@ -54,11 +54,19 @@ class Protocol(WebSocketServerProtocol):
     def status(self, value):
         self.PLAYER_STATUS = value
 
+    def log(self, method, message):
+        pre_message = f'CLIENT: {self.peer} ==>'
+
+        if method == 'info':
+            logger.info(f'{pre_message} {message}')
+        if method == 'warning':
+            logger.warning(f'{pre_message} {message}')
+
     def change_player_status(self, status):
         self.status = status
 
     def open_client(self):
-        self.player = Player(index = self.factory.num_clients + 1)
+        self.player = Player(self.factory.num_clients + 1)
         self.send_client_info()
         self.factory.register_client(self)
 
@@ -82,11 +90,12 @@ class Protocol(WebSocketServerProtocol):
             'PLAYER_STATUS': self.player_status_action,
             'THROW_DICES': self.throw_dices_action,
         }
-        action = switcher.get(payload.get('action', False), self.default_action)
-        action(payload)
+        action = payload.get('action', False)
+        action_method = switcher.get(action, self.default_action)
+        action_method(payload)
 
     def default_action(self, payload):
-        logger.warning(f'CLIENT: {self.peer} ==> Unknown or missing action')
+        self.log('warning', 'Unknown or missing action')
         response = {
             'action': 'ERROR',
             'reason': 'Unknown action',
@@ -94,7 +103,7 @@ class Protocol(WebSocketServerProtocol):
         self.sendMessage(json.dumps(response).encode('utf-8'))
 
     def chat_message_action(self, payload):
-        logger.info(f'CLIENT: {self.peer} ==> Chat message')
+        self.log('info', 'Chat message')
         message = payload['message']
         self.send_message(message)
 
@@ -109,7 +118,7 @@ class Protocol(WebSocketServerProtocol):
         self.factory.broadcast(json.dumps(response).encode('utf-8'))
 
     def player_updated_action(self, payload):
-        logger.info(f'CLIENT: {self.peer} ==> Updated')
+        self.log('info', 'Updated')
 
         name = payload['name'] or self.player.name
         colour = payload['colour']
@@ -145,7 +154,7 @@ class Protocol(WebSocketServerProtocol):
         self.factory.broadcast(json.dumps(response).encode('utf-8'))
 
     def player_status_action(self, payload):
-        logger.info(f'CLIENT: {self.peer} ==> Changed status to: {payload["status"]}')
+        self.log('info', f'Changed status to: {payload["status"]}')
         if payload['status'] == 'ready':
             self.change_player_status(READY)
             self.send_player_status('ready')
@@ -166,7 +175,7 @@ class Protocol(WebSocketServerProtocol):
         self.factory.broadcast(json.dumps(response).encode('utf-8'))
 
     def throw_dices_action(self, payload):
-        logger.info(f'CLIENT: {self.peer} ==> Throwed dices')
+        self.log('info', 'Throwed dices')
         response = {
             'action': 'DICES_RESULT',
             'dice1': self.number_to_string(random.randint(1, 6)),
