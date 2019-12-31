@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+BIN_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+DIR="$(dirname "$BIN_DIR")"
+
+source $DIR/venv/bin/activate

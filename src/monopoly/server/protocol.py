@@ -1,7 +1,7 @@
 from autobahn.asyncio.websocket import WebSocketServerProtocol
-from log import logger
-from log import log_exceptions
-from player import Player
+from monopoly.server.log import logger
+from monopoly.server.log import log_exceptions
+from monopoly.server.player import Player
 
 import json
 import random
@@ -19,22 +19,22 @@ class Protocol(WebSocketServerProtocol):
     # Events
     @log_exceptions
     def onConnect(self, request):
-        self.log('info', 'Connecting')
+        self.logger('info', 'Connecting')
 
     @log_exceptions
     def onOpen(self):
-        self.log('info', 'Opened')
+        self.logger('info', 'Opened')
         self.open_client()
 
     @log_exceptions
     def onClose(self, wasClean, code, reason):
-        self.log('info', f'Closed: Code {code} Reason: {reason}')
+        self.logger('info', f'Closed: Code {code} Reason: {reason}')
         self.close_client()
 
     @log_exceptions
     def onMessage(self, payload, isBinary):
         try:
-            self.log('info', 'Socket message')
+            self.logger('info', 'Socket message')
             payload = json.loads(payload.decode('utf8'))
             self.process_message(payload)
         except ValueError:
@@ -42,7 +42,7 @@ class Protocol(WebSocketServerProtocol):
                 'action': 'ERROR',
                 'reason': 'The message must be JSON',
             }
-            self.log('warning', 'Socket message error')
+            self.logger('warning', 'Socket message error')
             self.sendMessage(json.dumps(response).encode('utf-8'))
 
     # Class logic
@@ -54,7 +54,7 @@ class Protocol(WebSocketServerProtocol):
     def status(self, value):
         self.PLAYER_STATUS = value
 
-    def log(self, method, message):
+    def logger(self, method, message):
         pre_message = f'CLIENT: {self.peer} ==>'
 
         if method == 'info':
@@ -95,7 +95,7 @@ class Protocol(WebSocketServerProtocol):
         action_method(payload)
 
     def default_action(self, payload):
-        self.log('warning', 'Unknown or missing action')
+        self.logger('warning', 'Unknown or missing action')
         response = {
             'action': 'ERROR',
             'reason': 'Unknown action',
@@ -103,7 +103,7 @@ class Protocol(WebSocketServerProtocol):
         self.sendMessage(json.dumps(response).encode('utf-8'))
 
     def chat_message_action(self, payload):
-        self.log('info', 'Chat message')
+        self.logger('info', 'Chat message')
         message = payload['message']
         self.send_message(message)
 
@@ -118,7 +118,7 @@ class Protocol(WebSocketServerProtocol):
         self.factory.broadcast(json.dumps(response).encode('utf-8'))
 
     def player_updated_action(self, payload):
-        self.log('info', 'Updated')
+        self.logger('info', 'Updated')
 
         name = payload['name'] or self.player.name
         colour = payload['colour']
@@ -154,7 +154,7 @@ class Protocol(WebSocketServerProtocol):
         self.factory.broadcast(json.dumps(response).encode('utf-8'))
 
     def player_status_action(self, payload):
-        self.log('info', f'Changed status to: {payload["status"]}')
+        self.logger('info', f'Changed status to: {payload["status"]}')
         if payload['status'] == 'ready':
             self.change_player_status(READY)
             self.send_player_status('ready')
@@ -175,7 +175,7 @@ class Protocol(WebSocketServerProtocol):
         self.factory.broadcast(json.dumps(response).encode('utf-8'))
 
     def throw_dices_action(self, payload):
-        self.log('info', 'Throwed dices')
+        self.logger('info', 'Throwed dices')
         response = {
             'action': 'DICES_RESULT',
             'dice1': self.number_to_string(random.randint(1, 6)),

@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+BIN_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+DIR="$(dirname "$BIN_DIR")"
+
+echo '** Building: 3 steps **'
+echo '** Step 1/3 - Creating virtual enviroment **'
+python3.7 -m venv $DIR/venv
+
+echo '** Step 2/3 - Activating venv **'
+source $DIR/venv/bin/activate
+
+echo '** Step 3/3 - Installing dependencies **'
+pip install --upgrade pip
+pip install -r $DIR/requirements.txt
+
+echo '** Build finished **'
+exit

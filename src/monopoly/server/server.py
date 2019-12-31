@@ -1,7 +1,7 @@
 from contextlib import suppress
-from log import logger
-from protocol import Protocol
-from factory import Factory
+from monopoly.server.log import logger
+from monopoly.server.protocol import Protocol
+from monopoly.server.factory import Factory
 
 import asyncio
 import signal
@@ -53,7 +53,3 @@ def run_server():
         server.close()
         loop.close()
         logger.info('SERVER: Closed')
-
-
-if __name__ == '__main__':
-    run_server()

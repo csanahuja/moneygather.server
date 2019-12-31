@@ -1,6 +1,6 @@
 from autobahn.asyncio.websocket import WebSocketServerFactory
-from log import logger
-from monopoly import Monopoly
+from monopoly.server.log import logger
+from monopoly.server.monopoly import Monopoly
 
 import asyncio
 import json
