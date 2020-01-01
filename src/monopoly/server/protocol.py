@@ -148,6 +148,7 @@ class Protocol(WebSocketServerProtocol):
     def send_player_updated(self, previous_info, current_info):
         response = {
             'action': 'PLAYER_UPDATED',
+            'uid': self.player.UID,
             'previous': previous_info,
             'current': current_info,
         }

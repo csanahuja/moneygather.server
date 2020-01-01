@@ -37,6 +37,7 @@ class Factory(WebSocketServerFactory):
             self.clients.append(client)
             self.monopoly.add_player(client.player)
             self.client_connection(client.player, 'PLAYER_CONNECTED')
+            self.send_player_list()
 
     def unregister_client(self, client):
         if client in self.clients:
@@ -47,11 +48,31 @@ class Factory(WebSocketServerFactory):
     def client_connection(self, player, action):
         response = {
             'action': action,
+            'uid': player.UID,
             'name': player.name,
             'colour': player.colour,
             'gender': player.gender,
         }
         self.broadcast(json.dumps(response).encode('utf-8'))
+
+    def send_player_list(self):
+        player_list = self.get_player_list()
+        response = {
+            'action': 'PLAYER_LIST',
+            'player_list': player_list
+        }
+        self.broadcast(json.dumps(response).encode('utf-8'))
+
+    def get_player_list(self):
+        player_list = []
+        for client in self.clients:
+            player_list.append({
+                'uid': client.player.UID,
+                'name': client.player.name,
+                'colour': client.player.colour,
+                'gender': client.player.gender,
+            })
+        return player_list
 
     def client_is_ready(self):
         self.clients_ready += 1

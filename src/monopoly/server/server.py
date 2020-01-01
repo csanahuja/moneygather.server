@@ -16,7 +16,7 @@ def process_signal(signal_number, frame):
 
 
 def run_server():
-    logger.info('SERVER: starting')
+    logger.info('SERVER: Starting')
     signal.signal(signal.SIGTERM, process_signal)
 
     factory = Factory()
@@ -36,7 +36,7 @@ def run_server():
             raise exception
 
     try:
-        logger.info('SERVER: running')
+        logger.info('SERVER: Running')
         loop.run_forever()
     except KeyboardInterrupt:
         logger.info('SERVER: Shutting down by KeyboardInterrupt')
