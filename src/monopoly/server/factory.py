@@ -1,15 +1,15 @@
+"""
+Module: factory
+"""
 from autobahn.asyncio.websocket import WebSocketServerFactory
+from monopoly.server.exceptions import GameAlreadyStartedException
+from monopoly.server.exceptions import MaxPlayersException
+from monopoly.server.game import Game
 from monopoly.server.log import logger
-from monopoly.server.monopoly import Monopoly
+from monopoly.server.player import Player
 
 import asyncio
 import json
-
-
-# Player STATUS
-NOT_STARTED = 0
-STARTING = 1
-STARTED = 2
 
 
 class Factory(WebSocketServerFactory):
@@ -17,33 +17,52 @@ class Factory(WebSocketServerFactory):
     def __init__(self):
         super().__init__()
         self.clients = []
-        self.clients_ready = 0
-        self.status = NOT_STARTED
-        self.monopoly = Monopoly()
+        self.game = Game(self)
+
+    def register_client(self, client):
+        """ Method invoked by protocol (client) instance on open
+        Generates a new player and adds it to the game.
+
+        If no exceptions adds the client to the list of client.
+        If there are exceptions closes the websocket connection.
+        """
+        player = Player(client)
+
+        try:
+            self.game.add_player(player)
+        except GameAlreadyStartedException:
+            client.sendClose(code=3000, reason='Game already started')
+            return
+        except MaxPlayersException:
+            client.sendClose(code=3001, reason='Max players reached')
+            return
+
+        client.player = player
+        client.send_client_info()
+        self.clients.append(client)
+        self.client_connection(client.player, 'PLAYER_CONNECTED')
+        self.send_player_list()
+
+    def unregister_client(self, client):
+        """ Method invoked by protocol (client) instance on closed
+        Removes player from the game and client from the list of clients.
+        """
+        try:
+            self.clients.remove(client)
+            self.game.remove_player(client.player)
+        except ValueError:
+            pass
+        else:
+            self.client_connection(client.player, 'PLAYER_DISCONNECTED')
+            self.send_player_list()
 
     def broadcast(self, response):
+        """ Encodes and sends the message to all clients
+        """
+        response = json.dumps(response).encode('utf-8')
         preparedMsg = self.prepareMessage(response)
         for client in self.clients:
             client.sendPreparedMessage(preparedMsg)
-
-    @property
-    def num_clients(self):
-        return len(self.clients)
-
-    def register_client(self, client):
-        if self.status != NOT_STARTED:
-            client.sendClose(code=3000, reason='Game already started')
-        elif client not in self.clients:
-            self.clients.append(client)
-            self.monopoly.add_player(client.player)
-            self.client_connection(client.player, 'PLAYER_CONNECTED')
-            self.send_player_list()
-
-    def unregister_client(self, client):
-        if client in self.clients:
-            self.clients.remove(client)
-            self.monopoly.remove_player(client.player)
-            self.client_connection(client.player, 'PLAYER_DISCONNECTED')
 
     def client_connection(self, player, action):
         response = {
@@ -53,15 +72,16 @@ class Factory(WebSocketServerFactory):
             'colour': player.colour,
             'gender': player.gender,
         }
-        self.broadcast(json.dumps(response).encode('utf-8'))
+        self.broadcast(response)
 
     def send_player_list(self):
         player_list = self.get_player_list()
         response = {
             'action': 'PLAYER_LIST',
-            'player_list': player_list
+            'player_list': player_list,
+            'num_players': self.game.num_players
         }
-        self.broadcast(json.dumps(response).encode('utf-8'))
+        self.broadcast(response)
 
     def get_player_list(self):
         player_list = []
@@ -84,7 +104,7 @@ class Factory(WebSocketServerFactory):
 
     def starting_game(self):
         logger.info('SERVER ==> Starting game')
-        self.status = STARTING
+        # self.status = STARTING
         response = {
             'action': 'STARTING_GAME',
         }
@@ -94,7 +114,7 @@ class Factory(WebSocketServerFactory):
 
     def start_game(self):
         logger.info('SERVER ==> Game started')
-        self.status = STARTED
+        # self.status = STARTED
         response = {
             'action': 'STARTED',
         }
