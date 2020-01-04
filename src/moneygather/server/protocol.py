@@ -63,8 +63,8 @@ class Protocol(WebSocketServerProtocol):
         """
         switcher = {
             'MESSAGE': self.chat_message_action,
-            'PLAYER_UPDATED': self.player_updated_action,
             'PLAYER_STATUS': self.player_status_action,
+            'PLAYER_UPDATED': self.player_updated_action,
             'THROW_DICES': self.throw_dices_action,
         }
         action = payload.get('action', False)
@@ -100,6 +100,21 @@ class Protocol(WebSocketServerProtocol):
         message = payload['message']
         self.send_chat_message(message)
 
+    def player_status_action(self, payload):
+        self.logger('info', f'Changed status to: {payload["status"]}')
+        if payload['status'] == 'ready':
+            self.player.set_ready()
+            self.factory.send_game_event(
+                'PLAYER_READY',
+                self.player.to_json(),
+            )
+        else:
+            self.player.set_not_ready()
+            self.factory.send_game_event(
+                'PLAYER_NOT_READY',
+                self.player.to_json(),
+            )
+
     def player_updated_action(self, payload):
         """ Action handler when player updates their attributes.
         """
@@ -113,8 +128,8 @@ class Protocol(WebSocketServerProtocol):
         previous_gender = self.player.gender
 
         if (not self.player.update_player_attribute('name', name)
-                or not self.player.update_player_attribute('colour', colour)
-                or not self.player.update_player_attribute('gender', gender)):
+                and not self.player.update_player_attribute('colour', colour)
+                and not self.player.update_player_attribute('gender', gender)):
             return
 
         player_updated_info = {
@@ -126,17 +141,8 @@ class Protocol(WebSocketServerProtocol):
             'previous_gender': previous_gender,
         }
 
-        self.send_player_updated(player_updated_info)
+        self.factory.send_game_event('PLAYER_UPDATED', player_updated_info)
         self.factory.send_player_list()
-
-    def player_status_action(self, payload):
-        self.logger('info', f'Changed status to: {payload["status"]}')
-        if payload['status'] == 'ready':
-            self.player.set_ready()
-            self.factory.send_game_event('PLAYER_READY', self.player.to_json())
-        else:
-            self.player.set_not_ready()
-            self.factory.send_game_event('PLAYER_NOT_READY', self.player.to_json())
 
     def throw_dices_action(self, payload):
         self.logger('info', 'Throwed dices')
@@ -170,13 +176,5 @@ class Protocol(WebSocketServerProtocol):
             'name': self.player.name,
             'colour': self.player.colour,
             'gender': self.player.gender,
-        }
-        self.factory.broadcast(response)
-
-    def send_player_updated(self, player_updated):
-        response = {
-            'action': 'PLAYER_UPDATED',
-            'uid': self.player.UID,
-            'player_updated': player_updated,
         }
         self.factory.broadcast(response)
