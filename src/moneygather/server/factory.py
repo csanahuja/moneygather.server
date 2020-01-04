@@ -2,11 +2,11 @@
 Module: factory
 """
 from autobahn.asyncio.websocket import WebSocketServerFactory
-from monopoly.server.exceptions import GameAlreadyStartedException
-from monopoly.server.exceptions import MaxPlayersException
-from monopoly.server.game import Game
-from monopoly.server.log import logger
-from monopoly.server.player import Player
+from moneygather.server.exceptions import GameAlreadyStartedException
+from moneygather.server.exceptions import MaxPlayersException
+from moneygather.server.game import Game
+from moneygather.server.log import logger
+from moneygather.server.player import Player
 
 import asyncio
 import json

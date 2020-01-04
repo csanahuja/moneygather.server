@@ -1,7 +1,8 @@
 """
 Module: game
 """
-from monopoly.server.exceptions import MaxPlayersException
+from moneygather.server.exceptions import GameAlreadyStartedException
+from moneygather.server.exceptions import MaxPlayersException
 
 
 class Game:
@@ -33,6 +34,8 @@ class Game:
         """ Adds the player to the list of players and sets a back reference
         in the player.
         """
+        if self.has_started():
+            raise GameAlreadyStartedException
         if len(self.players) == 4:
             raise MaxPlayersException
 

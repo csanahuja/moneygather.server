@@ -1,6 +1,6 @@
 from autobahn.asyncio.websocket import WebSocketServerProtocol
-from monopoly.server.log import logger
-from monopoly.server.log import log_exceptions
+from moneygather.server.log import logger
+from moneygather.server.log import log_exceptions
 
 import json
 import random

@@ -3,12 +3,12 @@ import logging
 import sys
 
 
-logger = logging.getLogger('monopoly.server')
+logger = logging.getLogger('moneygather.server')
 logger.setLevel(logging.DEBUG)
 
 handler_stream = logging.StreamHandler()
 handler_file = logging.FileHandler(
-    '/opt/Monopoly/monopoly.server/logs/server.log')
+    '/opt/Moneygather/moneygather.server/logs/server.log')
 handler_stream.setLevel(logging.DEBUG)
 handler_file.setLevel(logging.DEBUG)
 

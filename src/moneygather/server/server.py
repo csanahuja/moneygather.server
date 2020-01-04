@@ -1,7 +1,7 @@
 from contextlib import suppress
-from monopoly.server.log import logger
-from monopoly.server.protocol import Protocol
-from monopoly.server.factory import Factory
+from moneygather.server.log import logger
+from moneygather.server.protocol import Protocol
+from moneygather.server.factory import Factory
 
 import asyncio
 import signal
