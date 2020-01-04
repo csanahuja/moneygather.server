@@ -133,10 +133,10 @@ class Protocol(WebSocketServerProtocol):
         self.logger('info', f'Changed status to: {payload["status"]}')
         if payload['status'] == 'ready':
             self.player.set_ready()
-            self.send_player_status('ready')
+            self.factory.send_game_event('PLAYER_READY', self.player.to_json())
         else:
             self.player.set_not_ready()
-            self.send_player_status('not_ready')
+            self.factory.send_game_event('PLAYER_NOT_READY', self.player.to_json())
 
     def throw_dices_action(self, payload):
         self.logger('info', 'Throwed dices')
@@ -161,7 +161,7 @@ class Protocol(WebSocketServerProtocol):
             'colour': self.player.colour,
             'gender': self.player.gender,
         }
-        self.sendMessage(json.dumps(response).encode('utf-8'))
+        self.send_message(response)
 
     def send_chat_message(self, message):
         response = {
@@ -178,15 +178,5 @@ class Protocol(WebSocketServerProtocol):
             'action': 'PLAYER_UPDATED',
             'uid': self.player.UID,
             'player_updated': player_updated,
-        }
-        self.factory.broadcast(response)
-
-    def send_player_status(self, status):
-        response = {
-            'action': 'PLAYER_STATUS',
-            'status': status,
-            'name': self.player.name,
-            'colour': self.player.colour,
-            'gender': self.player.gender,
         }
         self.factory.broadcast(response)

@@ -1,8 +1,8 @@
 """
 Module: game
 """
-from moneygather.server.exceptions import GameAlreadyStartedException
-from moneygather.server.exceptions import MaxPlayersException
+from moneygather.server.exceptions import GameAlreadyStarted
+from moneygather.server.exceptions import GameIsFull
 
 
 class Game:
@@ -35,9 +35,9 @@ class Game:
         in the player.
         """
         if self.has_started():
-            raise GameAlreadyStartedException
+            raise GameAlreadyStarted
         if len(self.players) == 4:
-            raise MaxPlayersException
+            raise GameIsFull
 
         self.players.append(player)
         player.game = self

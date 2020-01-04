@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 SCRIPTPATH="$( cd "$(dirname "$0")" ; pwd -P )"
 
-echo $SCRIPTPATH
 source $SCRIPTPATH/activate
 $SCRIPTPATH/run_server

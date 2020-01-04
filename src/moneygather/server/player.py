@@ -1,7 +1,7 @@
 """
 Module: player
 """
-from moneygather.exceptions import PlayerNoUpdatableAttribute
+from moneygather.server.exceptions import PlayerNoUpdatableAttribute
 
 import uuid
 
@@ -49,26 +49,36 @@ class Player:
         self.credit = credit
         self.position = 0
         self.name = self.default_name()
-        self.colour = self.default_color()
+        self.colour = self.default_colour()
         self.gender = self.default_gender()
 
-    def default_name(self, name):
+    def default_name(self):
         """ Returns the default name of the player, part of its UID.
         """
         name = f"Player {self.UID.split('-')[0]}"
         return name
 
-    def default_colour(self, colour):
+    def default_colour(self):
         """ Returns the default colour of the player, DEFAULT_COLOR attribute.
         """
         colour = self.DEFAULT_COLOUR
         return colour
 
-    def default_gender(self, gender):
+    def default_gender(self):
         """ Returns the default gender of the player, DEFAULT_GENDER attribute.
         """
         gender = self.DEFAULT_GENDER
         return gender
+
+    def to_json(self):
+        """ Returns a json dict with basic attributes
+        """
+        player = {
+            'name': self.name,
+            'colour': self.colour,
+            'gender': self.gender,
+        }
+        return player
 
     def update_player_attribute(self, attribute, value):
         """ Updates a personal player attribute. Only attributes inside

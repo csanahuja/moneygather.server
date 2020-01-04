@@ -3,8 +3,9 @@ import sys
 sys.path[0:0] = [
   '/opt/Moneygather/moneygather.server/src/',
 ]
-print(sys.path)
+
 from moneygather.server import run_server  # noqa: E402
+
 
 if __name__ == '__main__':
     run_server()

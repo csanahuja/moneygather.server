@@ -40,7 +40,7 @@ class Factory(WebSocketServerFactory):
         client.player = player
         client.send_client_info()
         self.clients.append(client)
-        self.client_connection(client.player, 'PLAYER_CONNECTED')
+        self.send_game_event('PLAYER_CONNECTED', client.player.to_json())
         self.send_player_list()
 
     def unregister_client(self, client):
@@ -53,7 +53,7 @@ class Factory(WebSocketServerFactory):
         except ValueError:
             pass
         else:
-            self.client_connection(client.player, 'PLAYER_DISCONNECTED')
+            self.send_game_event('PLAYER_DISCONNECTED', client.player.to_json())
             self.send_player_list()
 
     def broadcast(self, response):
@@ -64,17 +64,19 @@ class Factory(WebSocketServerFactory):
         for client in self.clients:
             client.sendPreparedMessage(preparedMsg)
 
-    def client_connection(self, player, action):
+    def send_game_event(self, game_event, data):
+        """ Sends a game event message.
+        """
         response = {
-            'action': action,
-            'uid': player.UID,
-            'name': player.name,
-            'colour': player.colour,
-            'gender': player.gender,
+            'action': 'GAME_EVENT',
+            'game_event': game_event,
+            'data': data,
         }
         self.broadcast(response)
 
     def send_player_list(self):
+        """ Sends the player list.
+        """
         player_list = self.get_player_list()
         response = {
             'action': 'PLAYER_LIST',
@@ -84,42 +86,40 @@ class Factory(WebSocketServerFactory):
         self.broadcast(response)
 
     def get_player_list(self):
+        """ Constructs the player list from the registered clients.
+        """
         player_list = []
         for client in self.clients:
-            player_list.append({
-                'uid': client.player.UID,
-                'name': client.player.name,
-                'colour': client.player.colour,
-                'gender': client.player.gender,
-            })
+            player = client.player.to_json()
+            player_list.append(player)
         return player_list
 
-    def client_is_ready(self):
-        self.clients_ready += 1
-        if self.clients_ready == 4:
-            self.starting_game()
+    # def client_is_ready(self):
+    #     self.clients_ready += 1
+    #     if self.clients_ready == 4:
+    #         self.starting_game()
 
-    def client_is_not_ready(self):
-        self.clients_ready -= 1
+    # def client_is_not_ready(self):
+    #     self.clients_ready -= 1
 
-    def starting_game(self):
-        logger.info('SERVER ==> Starting game')
-        # self.status = STARTING
-        response = {
-            'action': 'STARTING_GAME',
-        }
-        self.broadcast(json.dumps(response).encode('utf-8'))
+    # def starting_game(self):
+    #     logger.info('SERVER ==> Starting game')
+    #     # self.status = STARTING
+    #     response = {
+    #         'action': 'STARTING_GAME',
+    #     }
+    #     self.broadcast(json.dumps(response).encode('utf-8'))
 
-        asyncio.ensure_future(self.excecute_with_timeout(10, self.start_game))
+    #     asyncio.ensure_future(self.excecute_with_timeout(10, self.start_game))
 
-    def start_game(self):
-        logger.info('SERVER ==> Game started')
-        # self.status = STARTED
-        response = {
-            'action': 'STARTED',
-        }
-        self.broadcast(json.dumps(response).encode('utf-8'))
+    # def start_game(self):
+    #     logger.info('SERVER ==> Game started')
+    #     # self.status = STARTED
+    #     response = {
+    #         'action': 'STARTED',
+    #     }
+    #     self.broadcast(json.dumps(response).encode('utf-8'))
 
-    async def excecute_with_timeout(self, timeout, func):
-        await asyncio.sleep(timeout)
-        func()
+    # async def excecute_with_timeout(self, timeout, func):
+    #     await asyncio.sleep(timeout)
+    #     func()
