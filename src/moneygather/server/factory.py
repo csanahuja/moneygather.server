@@ -2,8 +2,8 @@
 Module: factory
 """
 from autobahn.asyncio.websocket import WebSocketServerFactory
-from moneygather.server.exceptions import GameAlreadyStartedException
-from moneygather.server.exceptions import MaxPlayersException
+from moneygather.server.exceptions import GameAlreadyStarted
+from moneygather.server.exceptions import GameIsFull
 from moneygather.server.game import Game
 from moneygather.server.log import logger
 from moneygather.server.player import Player
@@ -30,10 +30,10 @@ class Factory(WebSocketServerFactory):
 
         try:
             self.game.add_player(player)
-        except GameAlreadyStartedException:
+        except GameAlreadyStarted:
             client.sendClose(code=3000, reason='Game already started')
             return
-        except MaxPlayersException:
+        except GameIsFull:
             client.sendClose(code=3001, reason='Max players reached')
             return
 

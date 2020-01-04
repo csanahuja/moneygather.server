@@ -1,6 +1,10 @@
+"""
+Module: protocol
+"""
 from autobahn.asyncio.websocket import WebSocketServerProtocol
 from moneygather.server.log import logger
 from moneygather.server.log import log_exceptions
+from moneygather.server.utils import number_to_string
 
 import json
 import random
@@ -10,20 +14,28 @@ class Protocol(WebSocketServerProtocol):
 
     @log_exceptions
     def onConnect(self, request):
+        """ Connected client hook.
+        """
         self.logger('info', 'Connecting')
 
     @log_exceptions
     def onOpen(self):
+        """ Opened client hook. Registers the client.
+        """
         self.logger('info', 'Opened')
         self.factory.register_client(self)
 
     @log_exceptions
     def onClose(self, wasClean, code, reason):
+        """ Closed client hook. Unregisters the client.
+        """
         self.logger('info', f'Closed: Code {code} Reason: {reason}')
         self.factory.unregister_client(self)
 
     @log_exceptions
     def onMessage(self, payload, isBinary):
+        """ Message from client hook. Process the message.
+        """
         try:
             self.logger('info', 'Socket message')
             payload = json.loads(payload.decode('utf8'))
@@ -34,9 +46,11 @@ class Protocol(WebSocketServerProtocol):
                 'reason': 'The message must be JSON',
             }
             self.logger('warning', 'Socket message error')
-            self.sendMessage(json.dumps(response).encode('utf-8'))
+            self.send_message(response)
 
     def logger(self, method, message):
+        """ Helper function to log including client peer info.
+        """
         pre_message = f'CLIENT: {self.peer} ==>'
 
         if method == 'info':
@@ -44,17 +58,9 @@ class Protocol(WebSocketServerProtocol):
         if method == 'warning':
             logger.warning(f'{pre_message} {message}')
 
-    def send_client_info(self):
-        response = {
-            'action': 'PLAYER_INFO',
-            'uid': self.player.UID,
-            'name': self.player.name,
-            'colour': self.player.colour,
-            'gender': self.player.gender,
-        }
-        self.sendMessage(json.dumps(response).encode('utf-8'))
-
     def process_message(self, payload):
+        """ Reads the message action and calls the proper handler.
+        """
         switcher = {
             'MESSAGE': self.chat_message_action,
             'PLAYER_UPDATED': self.player_updated_action,
@@ -66,65 +72,62 @@ class Protocol(WebSocketServerProtocol):
         action_method(payload)
 
     def default_action(self, payload):
+        """ Default action handler when the message received by the client
+        contains an unknown action or no action at all.
+        """
         self.logger('warning', 'Unknown or missing action')
         response = {
             'action': 'ERROR',
             'reason': 'Unknown action',
         }
-        self.sendMessage(json.dumps(response).encode('utf-8'))
+        self.send_message(response)
+
+    def not_allowed_action(self):
+        """ Action handler when the client tries to perform an action it
+        is not allowed in the current workflow state.
+        """
+        self.logger('warning', 'Not allowed action')
+        response = {
+            'action': 'NOT ALLOWED',
+            'reason': 'Action not allowed',
+        }
+        self.send_message(response)
 
     def chat_message_action(self, payload):
+        """ Action handler when received a chat message.
+        """
         self.logger('info', 'Chat message')
         message = payload['message']
-        self.send_message(message)
-
-    def send_message(self, message):
-        response = {
-            'action': 'MESSAGE',
-            'message': message,
-            'name': self.player.name,
-            'colour': self.player.colour,
-            'gender': self.player.gender,
-        }
-        self.factory.broadcast(response)
+        self.send_chat_message(message)
 
     def player_updated_action(self, payload):
+        """ Action handler when player updates their attributes.
+        """
         self.logger('info', 'Updated')
 
-        name = payload['name'] or self.player.name
+        name = payload['name']
         colour = payload['colour']
         gender = payload['gender']
-
         previous_name = self.player.name
         previous_colour = self.player.colour
         previous_gender = self.player.gender
 
-        self.player.name = name
-        self.player.colour = colour
-        self.player.gender = gender
+        if (not self.player.update_player_attribute('name', name)
+                or not self.player.update_player_attribute('colour', colour)
+                or not self.player.update_player_attribute('gender', gender)):
+            return
 
-        current_info = {
-            'name': name,
-            'colour': colour,
-            'gender': gender,
-        }
-        previous_info = {
-            'name': previous_name,
-            'colour': previous_colour,
-            'gender': previous_gender,
+        player_updated_info = {
+            'name': self.player.name,
+            'colour': self.player.colour,
+            'gender': self.player.gender,
+            'previous_name': previous_name,
+            'previous_colour': previous_colour,
+            'previous_gender': previous_gender,
         }
 
-        self.send_player_updated(previous_info, current_info)
+        self.send_player_updated(player_updated_info)
         self.factory.send_player_list()
-
-    def send_player_updated(self, previous_info, current_info):
-        response = {
-            'action': 'PLAYER_UPDATED',
-            'uid': self.player.UID,
-            'previous': previous_info,
-            'current': current_info,
-        }
-        self.factory.broadcast(response)
 
     def player_status_action(self, payload):
         self.logger('info', f'Changed status to: {payload["status"]}')
@@ -135,6 +138,49 @@ class Protocol(WebSocketServerProtocol):
             self.player.set_not_ready()
             self.send_player_status('not_ready')
 
+    def throw_dices_action(self, payload):
+        self.logger('info', 'Throwed dices')
+        response = {
+            'action': 'DICES_RESULT',
+            'dice1': number_to_string(random.randint(1, 6)),
+            'dice2': number_to_string(random.randint(1, 6)),
+        }
+        self.sendMessage(json.dumps(response).encode('utf-8'))
+
+    def send_message(self, message):
+        """ Encodes the messages and sends to the client.
+        """
+        message = json.dumps(message).encode('utf-8')
+        self.sendMessage(message)
+
+    def send_client_info(self):
+        response = {
+            'action': 'PLAYER_INFO',
+            'uid': self.player.UID,
+            'name': self.player.name,
+            'colour': self.player.colour,
+            'gender': self.player.gender,
+        }
+        self.sendMessage(json.dumps(response).encode('utf-8'))
+
+    def send_chat_message(self, message):
+        response = {
+            'action': 'MESSAGE',
+            'message': message,
+            'name': self.player.name,
+            'colour': self.player.colour,
+            'gender': self.player.gender,
+        }
+        self.factory.broadcast(response)
+
+    def send_player_updated(self, player_updated):
+        response = {
+            'action': 'PLAYER_UPDATED',
+            'uid': self.player.UID,
+            'player_updated': player_updated,
+        }
+        self.factory.broadcast(response)
+
     def send_player_status(self, status):
         response = {
             'action': 'PLAYER_STATUS',
@@ -144,23 +190,3 @@ class Protocol(WebSocketServerProtocol):
             'gender': self.player.gender,
         }
         self.factory.broadcast(response)
-
-    def throw_dices_action(self, payload):
-        self.logger('info', 'Throwed dices')
-        response = {
-            'action': 'DICES_RESULT',
-            'dice1': self.number_to_string(random.randint(1, 6)),
-            'dice2': self.number_to_string(random.randint(1, 6)),
-        }
-        self.sendMessage(json.dumps(response).encode('utf-8'))
-
-    def number_to_string(self, number):
-        num_to_string_dict = {
-            1: 'one',
-            2: 'two',
-            3: 'three',
-            4: 'four',
-            5: 'five',
-            6: 'six',
-        }
-        return num_to_string_dict[number]

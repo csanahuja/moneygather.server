@@ -1,3 +1,6 @@
+"""
+Module: log
+"""
 import functools
 import logging
 import sys

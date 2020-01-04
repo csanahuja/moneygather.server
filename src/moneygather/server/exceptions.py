@@ -3,9 +3,13 @@ Module: exceptions
 """
 
 
-class GameAlreadyStartedException(Exception):
-    """ Game has already started """
+class GameAlreadyStarted(Exception):
+    """ Game already started """
 
 
-class MaxPlayersException(Exception):
-    """ Game has reached max players allowed """
+class GameIsFull(Exception):
+    """ Game is full, no more players allowed """
+
+
+class PlayerNoUpdatableAttribute(Exception):
+    """ This attribute cannot be updated by this method """

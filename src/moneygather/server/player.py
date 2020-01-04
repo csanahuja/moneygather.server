@@ -1,6 +1,8 @@
 """
 Module: player
 """
+from moneygather.exceptions import PlayerNoUpdatableAttribute
+
 import uuid
 
 
@@ -14,23 +16,23 @@ class Player:
     status : int
         Status of the player
     game : Game
-        Game instance
+        Game reference
     client : client class
         Client reference
-    name: str
-        Name of the player
-    colour: str
-        Colour of the player
-    gender: str
-        Gender of the player
     credit: int
         Credit of the player
     position: int
         Position of the player in the board
     """
 
+    # Personal attributes
     DEFAULT_COLOUR = '#007bff'
     DEFAULT_GENDER = 'ghost'
+    UPDATABLE_ATTRIBUTES = [
+        'name',
+        'colour',
+        'gender',
+    ]
     # STATUS
     PLAYER_NOT_READY = 0
     PLAYER_READY = 1
@@ -38,35 +40,53 @@ class Player:
     def __init__(
         self,
         client,
-        name=None,
-        colour=None,
-        gender=None,
         credit=1000,
     ):
         self.UID = str(uuid.uuid4())
         self.status = self.PLAYER_NOT_READY
         self.game = None
         self.client = client
-        self.name = self.assign_name(name)
-        self.colour = self.assign_colour(colour)
-        self.gender = self.assign_gender(gender)
         self.credit = credit
         self.position = 0
+        self.name = self.default_name()
+        self.colour = self.default_color()
+        self.gender = self.default_gender()
 
-    def assign_name(self, name):
-        if not name:
-            return f"Player {self.UID.split('-')[0]}"
+    def default_name(self, name):
+        """ Returns the default name of the player, part of its UID.
+        """
+        name = f"Player {self.UID.split('-')[0]}"
         return name
 
-    def assign_colour(self, colour):
-        if not colour:
-            return self.DEFAULT_COLOUR
+    def default_colour(self, colour):
+        """ Returns the default colour of the player, DEFAULT_COLOR attribute.
+        """
+        colour = self.DEFAULT_COLOUR
         return colour
 
-    def assign_gender(self, gender):
-        if not gender:
-            return self.DEFAULT_GENDER
+    def default_gender(self, gender):
+        """ Returns the default gender of the player, DEFAULT_GENDER attribute.
+        """
+        gender = self.DEFAULT_GENDER
         return gender
+
+    def update_player_attribute(self, attribute, value):
+        """ Updates a personal player attribute. Only attributes inside
+        UPDATABLE_ATTRIBUTES are allowed to be updated by this function.
+        Returns true if the value changes.
+        """
+        if attribute not in self.UPDATABLE_ATTRIBUTES:
+            raise PlayerNoUpdatableAttribute
+
+        if not value:
+            return False
+
+        attr_value = getattr(self, attribute)
+        if attr_value == value:
+            return False
+
+        setattr(self, attribute, value)
+        return True
 
     def set_ready(self):
         if self.game.has_started() or self.status == self.PLAYER_READY:
