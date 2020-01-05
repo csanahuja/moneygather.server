@@ -20,6 +20,8 @@ class Game:
         Server reference
     num_players: int
         Numbers of players the game needs
+    turn_length: int
+        Number of seconds of turn duration
     player_order: list
         List of players indicating the turn order
     player_turn: Player
@@ -30,8 +32,9 @@ class Game:
     GAME_STARTING = 1
     GAME_STARTED = 2
 
-    def __init__(self, server, num_players=4):
+    def __init__(self, server, num_players=4, turn_duration=30):
         self.num_players = num_players
+        self.turn_duration = turn_duration
         self.server = server
         self.initialize_game()
 
@@ -86,11 +89,14 @@ class Game:
         """ Starts the game.
         """
         self.status = self.GAME_STARTED
-        self.player_order = random.sample(self.players, self.num_players)
-        self.player_turn = self.next_turn()
-        self.server.start_game()
+        for player in self.players:
+            player.set_awaiting_turn()
 
-    def next_turn(self):
+        self.player_order = random.sample(self.players, self.num_players)
+        self.server.start_game()
+        self.next_turn()
+
+    def get_next_player_turn(self):
         """ Sets next player turn.
         """
         if not self.player_turn:
@@ -98,4 +104,13 @@ class Game:
 
         current_turn = self.player_order.index(self.player_turn)
         next_turn = (current_turn + 1) % self.num_players
-        return next_turn
+        next_player = self.player_order[next_turn]
+        return next_player
+
+    def next_turn(self):
+        """ Sets next turn
+        """
+        if self.player_turn:
+            self.player_turn.set_awaiting_turn()
+        self.player_turn = self.get_next_player_turn()
+        self.player_turn.set_turn()

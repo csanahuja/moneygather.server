@@ -102,6 +102,8 @@ class Protocol(WebSocketServerProtocol):
         self.send_chat_message(message)
 
     def player_status_action(self, payload):
+        """ Action handler when player changes its status.
+        """
         self.logger('info', f'Changed status to: {payload["status"]}')
         if payload['status'] == 'ready':
             self.factory.send_game_event(
@@ -146,13 +148,16 @@ class Protocol(WebSocketServerProtocol):
         self.factory.send_player_list()
 
     def throw_dices_action(self, payload):
+        """ Action handler when the player throws the dices.
+        """
         self.logger('info', 'Throwed dices')
         response = {
             'action': 'DICES_RESULT',
             'dice1': number_to_string(random.randint(1, 6)),
             'dice2': number_to_string(random.randint(1, 6)),
         }
-        self.send_message(response)
+        self.factory.broadcast(response)
+        self.factory.next_turn()
 
     def send_message(self, message):
         """ Encodes the messages and sends to the client.
@@ -161,6 +166,8 @@ class Protocol(WebSocketServerProtocol):
         self.sendMessage(message)
 
     def send_client_info(self):
+        """ Sends to client initial information about the player.
+        """
         response = {
             'action': 'PLAYER_INFO',
             'uid': self.player.UID,
@@ -171,6 +178,8 @@ class Protocol(WebSocketServerProtocol):
         self.send_message(response)
 
     def send_chat_message(self, message):
+        """ Sends to clients a chat message.
+        """
         response = {
             'action': 'MESSAGE',
             'message': message,
@@ -179,3 +188,12 @@ class Protocol(WebSocketServerProtocol):
             'gender': self.player.gender,
         }
         self.factory.broadcast(response)
+
+    def send_player_turn(self, turn_duration):
+        """ Sends the player when it is his turn.
+        """
+        response = {
+            'action': 'PLAYER_TURN',
+            'duration': turn_duration,
+        }
+        self.send_message(response)

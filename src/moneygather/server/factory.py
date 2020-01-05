@@ -106,6 +106,11 @@ class Factory(WebSocketServerFactory):
         }
         self.broadcast(response)
 
+    def next_turn(self):
+        """ Assigns next turn.
+        """
+        self.game.next_turn()
+
     async def execute_timeout(self, timeout, func):
         await asyncio.sleep(timeout)
         func()

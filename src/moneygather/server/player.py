@@ -36,6 +36,8 @@ class Player:
     # STATUS
     PLAYER_NOT_READY = 0
     PLAYER_READY = 1
+    PLAYER_AWAITING_TURN = 2
+    PLAYER_TURN = 3
 
     def __init__(
         self,
@@ -77,6 +79,7 @@ class Player:
             'name': self.name,
             'colour': self.colour,
             'gender': self.gender,
+            'uid': self.UID,
         }
         return player
 
@@ -112,8 +115,23 @@ class Player:
         self.game.player_is_ready()
 
     def set_not_ready(self):
-        """ Changes the playe rstatus to not ready.
+        """ Changes the player status to not ready.
         """
         if self.game.has_started() or self.status == self.PLAYER_NOT_READY:
             return
         self.status = self.PLAYER_NOT_READY
+
+    def set_awaiting_turn(self):
+        """ Changes the player status to awaiting turn.
+        """
+        if self.status == self.PLAYER_AWAITING_TURN:
+            return
+        self.status = self.PLAYER_AWAITING_TURN
+
+    def set_turn(self):
+        """ Changes the player status to turn.
+        """
+        if self.status == self.PLAYER_TURN:
+            return
+        self.status = self.PLAYER_TURN
+        self.client.send_player_turn(self.game.turn_duration)
