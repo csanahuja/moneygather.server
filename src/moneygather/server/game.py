@@ -52,7 +52,7 @@ class Game:
         """
         if self.has_started():
             raise GameAlreadyStarted
-        if len(self.players) == 4:
+        if len(self.players) == self.num_players:
             raise GameIsFull
 
         self.players.append(player)
