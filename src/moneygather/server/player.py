@@ -98,13 +98,22 @@ class Player:
         setattr(self, attribute, value)
         return True
 
+    def is_ready(self):
+        """ Returns if the player is ready.
+        """
+        return self.status == self.PLAYER_READY
+
     def set_ready(self):
+        """ Changes the player status to ready.
+        """
         if self.game.has_started() or self.status == self.PLAYER_READY:
             return
         self.status = self.PLAYER_READY
         self.game.player_is_ready()
 
     def set_not_ready(self):
+        """ Changes the playe rstatus to not ready.
+        """
         if self.game.has_started() or self.status == self.PLAYER_NOT_READY:
             return
         self.status = self.PLAYER_NOT_READY

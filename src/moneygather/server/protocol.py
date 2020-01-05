@@ -82,11 +82,11 @@ class Protocol(WebSocketServerProtocol):
         }
         self.send_message(response)
 
-    def not_allowed_action(self):
+    def not_allowed_action(self, action):
         """ Action handler when the client tries to perform an action it
         is not allowed in the current workflow state.
         """
-        self.logger('warning', 'Not allowed action')
+        self.logger('warning', f'Not allowed action: {action}')
         response = {
             'action': 'NOT ALLOWED',
             'reason': 'Action not allowed',
@@ -103,17 +103,17 @@ class Protocol(WebSocketServerProtocol):
     def player_status_action(self, payload):
         self.logger('info', f'Changed status to: {payload["status"]}')
         if payload['status'] == 'ready':
-            self.player.set_ready()
             self.factory.send_game_event(
                 'PLAYER_READY',
                 self.player.to_json(),
             )
+            self.player.set_ready()
         else:
-            self.player.set_not_ready()
             self.factory.send_game_event(
                 'PLAYER_NOT_READY',
                 self.player.to_json(),
             )
+            self.player.set_not_ready()
 
     def player_updated_action(self, payload):
         """ Action handler when player updates their attributes.
@@ -151,7 +151,7 @@ class Protocol(WebSocketServerProtocol):
             'dice1': number_to_string(random.randint(1, 6)),
             'dice2': number_to_string(random.randint(1, 6)),
         }
-        self.sendMessage(json.dumps(response).encode('utf-8'))
+        self.send_message(response)
 
     def send_message(self, message):
         """ Encodes the messages and sends to the client.

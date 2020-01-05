@@ -13,7 +13,7 @@ NUMBER_STRING_DICT = {
 }
 
 
-def number_to_string(self, number):
+def number_to_string(number):
     try:
         return NUMBER_STRING_DICT[number]
     except KeyError:

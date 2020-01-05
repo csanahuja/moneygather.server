@@ -53,7 +53,10 @@ class Factory(WebSocketServerFactory):
         except ValueError:
             pass
         else:
-            self.send_game_event('PLAYER_DISCONNECTED', client.player.to_json())
+            self.send_game_event(
+                'PLAYER_DISCONNECTED',
+                client.player.to_json(),
+            )
             self.send_player_list()
 
     def broadcast(self, response):
@@ -94,32 +97,17 @@ class Factory(WebSocketServerFactory):
             player_list.append(player)
         return player_list
 
-    # def client_is_ready(self):
-    #     self.clients_ready += 1
-    #     if self.clients_ready == 4:
-    #         self.starting_game()
+    def start_game(self):
+        """ Starts the game.
+        """
+        logger.info('SERVER ==> Game started')
+        response = {
+            'action': 'GAME_STARTED',
+        }
+        self.broadcast(response)
 
-    # def client_is_not_ready(self):
-    #     self.clients_ready -= 1
+    async def execute_timeout(self, timeout, func):
+        await asyncio.sleep(timeout)
+        func()
 
-    # def starting_game(self):
-    #     logger.info('SERVER ==> Starting game')
-    #     # self.status = STARTING
-    #     response = {
-    #         'action': 'STARTING_GAME',
-    #     }
-    #     self.broadcast(json.dumps(response).encode('utf-8'))
-
-    #     asyncio.ensure_future(self.excecute_with_timeout(10, self.start_game))
-
-    # def start_game(self):
-    #     logger.info('SERVER ==> Game started')
-    #     # self.status = STARTED
-    #     response = {
-    #         'action': 'STARTED',
-    #     }
-    #     self.broadcast(json.dumps(response).encode('utf-8'))
-
-    # async def excecute_with_timeout(self, timeout, func):
-    #     await asyncio.sleep(timeout)
-    #     func()
+    # asyncio.ensure_future(self.execute_timeout(2, self.start_game))

@@ -4,6 +4,8 @@ Module: game
 from moneygather.server.exceptions import GameAlreadyStarted
 from moneygather.server.exceptions import GameIsFull
 
+import random
+
 
 class Game:
     """ A class to encapsulate the logic of the game
@@ -18,6 +20,10 @@ class Game:
         Server reference
     num_players: int
         Numbers of players the game needs
+    player_order: list
+        List of players indicating the turn order
+    player_turn: Player
+        Player that has the turn
     """
 
     GAME_NOT_STARTED = 0
@@ -25,10 +31,17 @@ class Game:
     GAME_STARTED = 2
 
     def __init__(self, server, num_players=4):
-        self.status = self.GAME_NOT_STARTED
-        self.players = []
         self.num_players = num_players
         self.server = server
+        self.initialize_game()
+
+    def initialize_game(self):
+        """ Initializes the game.
+        """
+        self.status = self.GAME_NOT_STARTED
+        self.players = []
+        self.player_order = []
+        self.player_turn = None
 
     def add_player(self, player):
         """ Adds the player to the list of players and sets a back reference
@@ -48,6 +61,8 @@ class Game:
         """
         self.players.remove(player)
         player.game = None
+        if not self.players:
+            self.initialize_game()
 
     def has_started(self):
         """ Returns True if the game has started.
@@ -61,4 +76,26 @@ class Game:
         Checks if all players are ready and the criterias to start
         the game are meet.
         """
-        pass
+        if len(self.players) != self.num_players:
+            return
+
+        if all(map(lambda player: player.is_ready(), self.players)):
+            self.start_game()
+
+    def start_game(self):
+        """ Starts the game.
+        """
+        self.status = self.GAME_STARTED
+        self.player_order = random.sample(self.players, self.num_players)
+        self.player_turn = self.next_turn()
+        self.server.start_game()
+
+    def next_turn(self):
+        """ Sets next player turn.
+        """
+        if not self.player_turn:
+            return self.player_order[0]
+
+        current_turn = self.player_order.index(self.player_turn)
+        next_turn = (current_turn + 1) % self.num_players
+        return next_turn
