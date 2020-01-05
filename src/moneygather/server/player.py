@@ -3,6 +3,7 @@ Module: player
 """
 from moneygather.server.exceptions import PlayerNoUpdatableAttribute
 
+import random
 import uuid
 
 
@@ -23,6 +24,8 @@ class Player:
         Credit of the player
     position: int
         Position of the player in the board
+    random: boolean
+        Indicates if some attributes are randomized or default
     """
 
     # Personal attributes
@@ -32,6 +35,11 @@ class Player:
         'name',
         'colour',
         'gender',
+    ]
+    GENDERS = [
+        'ghost',
+        'male',
+        'female',
     ]
     # STATUS
     PLAYER_NOT_READY = 0
@@ -43,6 +51,7 @@ class Player:
         self,
         client,
         credit=1000,
+        random=True,
     ):
         self.UID = str(uuid.uuid4())
         self.status = self.PLAYER_NOT_READY
@@ -51,8 +60,12 @@ class Player:
         self.credit = credit
         self.position = 0
         self.name = self.default_name()
-        self.colour = self.default_colour()
-        self.gender = self.default_gender()
+        if random:
+            self.colour = self.random_colour()
+            self.gender = self.random_gender()
+        else:
+            self.colour = self.default_colour()
+            self.gender = self.default_gender()
 
     def default_name(self):
         """ Returns the default name of the player, part of its UID.
@@ -70,6 +83,17 @@ class Player:
         """ Returns the default gender of the player, DEFAULT_GENDER attribute.
         """
         gender = self.DEFAULT_GENDER
+        return gender
+
+    def random_colour(self):
+        c1 = format(random.randint(0, 255), 'x')
+        c2 = format(random.randint(0, 255), 'x')
+        c3 = format(random.randint(0, 255), 'x')
+        colour = f'#{c1}{c2}{c3}'
+        return colour
+
+    def random_gender(self):
+        gender = random.choice(self.GENDERS)
         return gender
 
     def to_json(self):
