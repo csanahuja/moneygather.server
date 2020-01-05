@@ -39,7 +39,6 @@ class Protocol(WebSocketServerProtocol):
         try:
             self.logger('info', 'Socket message')
             payload = json.loads(payload.decode('utf8'))
-            self.process_message(payload)
         except ValueError:
             response = {
                 'action': 'ERROR',
@@ -47,6 +46,8 @@ class Protocol(WebSocketServerProtocol):
             }
             self.logger('warning', 'Socket message error')
             self.send_message(response)
+        else:
+            self.process_message(payload)
 
     def logger(self, method, message):
         """ Helper function to log including client peer info.
