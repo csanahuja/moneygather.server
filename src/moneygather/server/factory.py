@@ -25,7 +25,7 @@ class Factory(WebSocketServerFactory):
         If no exceptions adds the client to the list of client.
         If there are exceptions closes the websocket connection.
         """
-        player = Player(client)
+        player = Player(client, self.game)
 
         try:
             self.game.add_player(player)

@@ -61,7 +61,6 @@ class Game:
             raise GameIsFull
 
         self.players.append(player)
-        player.game = self
 
     def remove_player(self, player):
         """ Removes the player from the list of players and unsets the back

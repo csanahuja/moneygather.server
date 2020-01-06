@@ -50,12 +50,13 @@ class Player:
     def __init__(
         self,
         client,
+        game,
         credit=1000,
         random=True,
     ):
         self.UID = str(uuid.uuid4())
         self.status = self.PLAYER_NOT_READY
-        self.game = None
+        self.game = game
         self.client = client
         self.credit = credit
         self.position = 0
