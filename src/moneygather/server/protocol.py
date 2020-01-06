@@ -157,7 +157,7 @@ class Protocol(WebSocketServerProtocol):
             'dice2': number_to_string(random.randint(1, 6)),
         }
         self.factory.broadcast(response)
-        self.factory.next_turn()
+        # self.factory.next_turn()
 
     def send_message(self, message):
         """ Encodes the messages and sends to the client.
@@ -195,5 +195,13 @@ class Protocol(WebSocketServerProtocol):
         response = {
             'action': 'PLAYER_TURN',
             'duration': turn_duration,
+        }
+        self.send_message(response)
+
+    def send_player_turn_end(self):
+        """ Sends the player when his turn has ended.
+        """
+        response = {
+            'action': 'PLAYER_TURN_END',
         }
         self.send_message(response)

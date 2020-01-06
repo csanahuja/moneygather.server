@@ -5,10 +5,8 @@ from autobahn.asyncio.websocket import WebSocketServerFactory
 from moneygather.server.exceptions import GameAlreadyStarted
 from moneygather.server.exceptions import GameIsFull
 from moneygather.server.game import Game
-from moneygather.server.log import logger
 from moneygather.server.player import Player
 
-import asyncio
 import json
 
 
@@ -100,7 +98,6 @@ class Factory(WebSocketServerFactory):
     def start_game(self):
         """ Starts the game.
         """
-        logger.info('SERVER ==> Game started')
         response = {
             'action': 'GAME_STARTED',
         }
@@ -110,9 +107,3 @@ class Factory(WebSocketServerFactory):
         """ Assigns next turn.
         """
         self.game.next_turn()
-
-    async def execute_timeout(self, timeout, func):
-        await asyncio.sleep(timeout)
-        func()
-
-    # asyncio.ensure_future(self.execute_timeout(2, self.start_game))

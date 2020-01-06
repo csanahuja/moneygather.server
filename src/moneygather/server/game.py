@@ -3,6 +3,8 @@ Module: game
 """
 from moneygather.server.exceptions import GameAlreadyStarted
 from moneygather.server.exceptions import GameIsFull
+from moneygather.server.log import logger
+from moneygather.server.turn import Turn
 
 import random
 
@@ -20,7 +22,7 @@ class Game:
         Server reference
     num_players: int
         Numbers of players the game needs
-    turn_length: int
+    turn_duration: int
         Number of seconds of turn duration
     player_order: list
         List of players indicating the turn order
@@ -32,9 +34,10 @@ class Game:
     GAME_STARTING = 1
     GAME_STARTED = 2
 
-    def __init__(self, server, num_players=4, turn_duration=30):
+    def __init__(self, server, num_players=2, turn_duration=5):
         self.num_players = num_players
         self.turn_duration = turn_duration
+        self.turn = Turn(self, turn_duration)
         self.server = server
         self.initialize_game()
 
@@ -88,6 +91,8 @@ class Game:
     def start_game(self):
         """ Starts the game.
         """
+        logger.info('GAME ==> Starting game')
+
         self.status = self.GAME_STARTED
         for player in self.players:
             player.set_awaiting_turn()
@@ -110,7 +115,12 @@ class Game:
     def next_turn(self):
         """ Sets next turn
         """
+        logger.info('GAME ==> Next turn')
+
         if self.player_turn:
+            self.turn.cancel_turn()
             self.player_turn.set_awaiting_turn()
+
         self.player_turn = self.get_next_player_turn()
         self.player_turn.set_turn()
+        self.turn.turn_start()

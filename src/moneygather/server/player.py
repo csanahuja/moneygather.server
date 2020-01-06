@@ -151,6 +151,7 @@ class Player:
         if self.status == self.PLAYER_AWAITING_TURN:
             return
         self.status = self.PLAYER_AWAITING_TURN
+        self.client.send_player_turn_end()
 
     def set_turn(self):
         """ Changes the player status to turn.
