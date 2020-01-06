@@ -18,22 +18,22 @@ class Turn:
     def __init__(self, game, duration):
         self.game = game
         self.duration = duration
-        self.task = None
+        self.turns = []
 
     def turn_start(self):
-        task = asyncio.ensure_future(self.turn_timeout())
-        self.task = task
+        turn = asyncio.ensure_future(self.turn_timeout())
+        self.turns.append(turn)
 
     async def turn_timeout(self):
         try:
             await asyncio.sleep(self.duration)
         except asyncio.CancelledError:
-            self.task = None
             return
         else:
-            self.task = None
+            self.turns.pop(0)
             self.game.next_turn()
 
     def cancel_turn(self):
-        if self.task:
-            self.task.cancel()
+        if self.turns:
+            turn = self.turns.pop(0)
+            turn.cancel()

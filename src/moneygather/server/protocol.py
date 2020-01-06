@@ -157,7 +157,7 @@ class Protocol(WebSocketServerProtocol):
             'dice2': number_to_string(random.randint(1, 6)),
         }
         self.factory.broadcast(response)
-        # self.factory.next_turn()
+        self.factory.next_turn()
 
     def send_message(self, message):
         """ Encodes the messages and sends to the client.
