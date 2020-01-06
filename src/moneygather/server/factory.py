@@ -6,6 +6,7 @@ from moneygather.server.exceptions import GameAlreadyStarted
 from moneygather.server.exceptions import GameIsFull
 from moneygather.server.game import Game
 from moneygather.server.player import Player
+from moneygather.server.utils import number_to_string
 
 import json
 
@@ -86,6 +87,26 @@ class Factory(WebSocketServerFactory):
         }
         self.broadcast(response)
 
+    def send_dices_result(self, dices_result):
+        """ Sends dices result.
+        """
+        response = {
+            'action': 'DICES_RESULT',
+            'dice1': number_to_string(dices_result[0]),
+            'dice2': number_to_string(dices_result[1]),
+        }
+        self.broadcast(response)
+
+    def send_player_movement(self, player):
+        """ Sends a player movement.
+        """
+        response = {
+            'action': 'PLAYER_MOVEMENT',
+            'position': player.position,
+            'uid': player.UID,
+        }
+        self.broadcast(response)
+
     def get_player_list(self):
         """ Constructs the player list from the registered clients.
         """
@@ -98,8 +119,10 @@ class Factory(WebSocketServerFactory):
     def start_game(self):
         """ Starts the game.
         """
+        player_list = self.get_player_list()
         response = {
             'action': 'GAME_STARTED',
+            'player_list': player_list,
         }
         self.broadcast(response)
 

@@ -4,7 +4,6 @@ Module: protocol
 from autobahn.asyncio.websocket import WebSocketServerProtocol
 from moneygather.server.log import logger
 from moneygather.server.log import log_exceptions
-from moneygather.server.utils import number_to_string
 
 import json
 import random
@@ -151,12 +150,12 @@ class Protocol(WebSocketServerProtocol):
         """ Action handler when the player throws the dices.
         """
         self.logger('info', 'Throwed dices')
-        response = {
-            'action': 'DICES_RESULT',
-            'dice1': number_to_string(random.randint(1, 6)),
-            'dice2': number_to_string(random.randint(1, 6)),
-        }
-        self.factory.broadcast(response)
+
+        dice1 = random.randint(1, 6)
+        dice2 = random.randint(1, 6)
+
+        self.factory.send_dices_result([dice1, dice2])
+        self.player.move(dice1 + dice2)
         self.factory.next_turn()
 
     def send_message(self, message):

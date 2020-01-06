@@ -38,6 +38,7 @@ class Game:
         self.num_players = num_players
         self.turn_duration = turn_duration
         self.turn = Turn(self, turn_duration)
+        self.positions = 40
         self.server = server
         self.initialize_game()
 
@@ -48,6 +49,7 @@ class Game:
         self.players = []
         self.player_order = []
         self.player_turn = None
+        self.turn.cancel_turn()
 
     def add_player(self, player):
         """ Adds the player to the list of players and sets a back reference
@@ -78,7 +80,7 @@ class Game:
         return True
 
     def player_is_ready(self):
-        """ Method invoked by the players when set to ready.
+        """ Invoked by the players when set to ready.
         Checks if all players are ready and the criterias to start
         the game are meet.
         """
@@ -102,7 +104,7 @@ class Game:
         self.next_turn()
 
     def get_next_player_turn(self):
-        """ Sets next player turn.
+        """ Sets next player.
         """
         if not self.player_turn:
             return self.player_order[0]
@@ -113,7 +115,7 @@ class Game:
         return next_player
 
     def next_turn(self):
-        """ Sets next turn
+        """ Sets next turn.
         """
         logger.info('GAME ==> Next turn')
 
@@ -124,3 +126,9 @@ class Game:
         self.player_turn = self.get_next_player_turn()
         self.player_turn.set_turn()
         self.turn.turn_start()
+
+    def player_moved(self, player):
+        """ Invoked by the players when they move.
+        Informs the factory about the movement
+        """
+        self.server.send_player_movement(player)

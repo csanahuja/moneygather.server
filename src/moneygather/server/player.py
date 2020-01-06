@@ -104,6 +104,7 @@ class Player:
             'colour': self.colour,
             'gender': self.gender,
             'uid': self.UID,
+            'position': self.position,
         }
         return player
 
@@ -160,3 +161,10 @@ class Player:
             return
         self.status = self.PLAYER_TURN
         self.client.send_player_turn(self.game.turn_duration)
+
+    def move(self, movement):
+        """ Moves the player from current position to `position + movement`
+        position.
+        """
+        self.position = (self.position + movement) % self.game.positions
+        self.game.player_moved(self)
