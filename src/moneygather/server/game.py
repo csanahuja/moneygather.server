@@ -34,7 +34,7 @@ class Game:
     GAME_STARTING = 1
     GAME_STARTED = 2
 
-    def __init__(self, server, num_players=2, turn_duration=10):
+    def __init__(self, server, num_players=4, turn_duration=30):
         self.num_players = num_players
         self.turn_duration = turn_duration
         self.turn = Turn(self, turn_duration)

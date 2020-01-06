@@ -87,10 +87,10 @@ class Player:
         return gender
 
     def random_colour(self):
-        c1 = format(random.randint(0, 255), 'x')
-        c2 = format(random.randint(0, 255), 'x')
-        c3 = format(random.randint(0, 255), 'x')
-        colour = f'#{c1}{c2}{c3}'
+        c1 = format(random.randint(0, 255), '2x')
+        c2 = format(random.randint(0, 255), '2x')
+        c3 = format(random.randint(0, 255), '2x')
+        colour = f'#{c1}{c2}{c3}'.replace(' ', '0')
         return colour
 
     def random_gender(self):
