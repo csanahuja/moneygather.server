@@ -64,7 +64,6 @@ class Game:
         reference.
         """
         self.players.remove(player)
-        player.game = None
         if not self.players:
             self.initialize_game()
 
