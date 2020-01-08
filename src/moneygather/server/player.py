@@ -106,6 +106,7 @@ class Player:
             'gender': self.gender,
             'uid': self.UID,
             'position': self.position,
+            'ready': self.is_ready(),
         }
         return player
 
@@ -130,6 +131,8 @@ class Player:
     def is_ready(self):
         """ Returns if the player is ready.
         """
+        if self.game.has_started():
+            return True
         return self.status == self.PLAYER_READY
 
     def set_ready(self):

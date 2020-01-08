@@ -115,6 +115,7 @@ class Protocol(WebSocketServerProtocol):
                 self.player.to_json(),
             )
             self.player.set_not_ready()
+        self.factory.send_player_list()
 
     def player_updated_action(self, payload):
         """ Action handler when player updates their attributes.
