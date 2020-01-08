@@ -22,10 +22,10 @@ class Turn:
         self.action = -1
         self.actions = [
             self.throwing_dices,
-            self.testing
+            self.dummy_action,
         ]
         self.actions_duration = [
-            10,
+            5,
             5,
         ]
 
@@ -49,13 +49,15 @@ class Turn:
             self.timeout_action(timeout, action))
 
     def dices_end(self):
-        print(self.action_timeout)
         if self.action_timeout:
             self.action_timeout.cancel()
         self.next_action()
 
-    def testing(self):
-        print('testtttting')
+    def dummy_action(self):
+        timeout = self.actions_duration[self.action]
+        action = self.game.next_turn
+        self.action_timeout = asyncio.ensure_future(
+            self.timeout_action(timeout, action))
 
     async def timeout_action(self, timeout, action):
         try:
