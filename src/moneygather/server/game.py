@@ -22,8 +22,6 @@ class Game:
         Server reference
     num_players: int
         Numbers of players the game needs
-    turn_duration: int
-        Number of seconds of turn duration
     player_order: list
         List of players indicating the turn order
     player_turn: Player
@@ -34,10 +32,9 @@ class Game:
     GAME_STARTING = 1
     GAME_STARTED = 2
 
-    def __init__(self, server, num_players=4, turn_duration=30):
+    def __init__(self, server, num_players=2):
         self.num_players = num_players
-        self.turn_duration = turn_duration
-        self.turn = Turn(self, turn_duration)
+        self.turn = Turn(self)
         self.positions = 40
         self.server = server
         self.initialize_game()
@@ -49,7 +46,7 @@ class Game:
         self.players = []
         self.player_order = []
         self.player_turn = None
-        self.turn.cancel_turn()
+        # self.turn.cancel_turn()
 
     def add_player(self, player):
         """ Adds the player to the list of players and sets a back reference
@@ -119,15 +116,21 @@ class Game:
         logger.info('GAME ==> Next turn')
 
         if self.player_turn:
-            self.turn.cancel_turn()
             self.player_turn.set_awaiting_turn()
 
         self.player_turn = self.get_next_player_turn()
         self.player_turn.set_turn()
-        self.turn.turn_start()
+        self.turn.turn_start(self.player_turn)
+
+    def player_throwed_dices(self, dices):
+        """ Invoked by the player when they throw dices.
+        Informs the server about the dices result
+        """
+        self.turn.dices_end()
+        self.server.send_dices_result(dices)
 
     def player_moved(self, player):
         """ Invoked by the players when they move.
-        Informs the factory about the movement
+        Informs the server about the movement
         """
         self.server.send_player_movement(player)

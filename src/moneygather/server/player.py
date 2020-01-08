@@ -153,7 +153,7 @@ class Player:
         if self.status == self.PLAYER_AWAITING_TURN:
             return
         self.status = self.PLAYER_AWAITING_TURN
-        self.client.send_player_turn_end()
+        # self.client.send_player_turn_end()
 
     def set_turn(self):
         """ Changes the player status to turn.
@@ -161,7 +161,17 @@ class Player:
         if self.status == self.PLAYER_TURN:
             return
         self.status = self.PLAYER_TURN
-        self.client.send_player_turn(self.game.turn_duration)
+        self.client.send_player_turn(10)
+
+    def throw_dices(self):
+        """ Throws dices. Generates two random numbers from 1-6.
+        """
+        dice1 = random.randint(1, 6)
+        dice2 = random.randint(1, 6)
+
+        self.client.send_player_end_dices()
+        self.game.player_throwed_dices([dice1, dice2])
+        self.move(dice1 + dice2)
 
     def move(self, movement):
         """ Moves the player from current position to `position + movement`

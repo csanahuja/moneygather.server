@@ -6,7 +6,6 @@ from moneygather.server.log import logger
 from moneygather.server.log import log_exceptions
 
 import json
-import random
 
 
 class Protocol(WebSocketServerProtocol):
@@ -151,12 +150,8 @@ class Protocol(WebSocketServerProtocol):
         """
         self.logger('info', 'Throwed dices')
 
-        dice1 = random.randint(1, 6)
-        dice2 = random.randint(1, 6)
-
-        self.factory.send_dices_result([dice1, dice2])
-        self.player.move(dice1 + dice2)
-        self.factory.next_turn()
+        self.player.throw_dices()
+        # self.factory.next_turn()
 
     def send_message(self, message):
         """ Encodes the messages and sends to the client.
@@ -197,10 +192,10 @@ class Protocol(WebSocketServerProtocol):
         }
         self.send_message(response)
 
-    def send_player_turn_end(self):
-        """ Sends the player when his turn has ended.
+    def send_player_end_dices(self):
+        """ Sends the player when he cannot throw dices.
         """
         response = {
-            'action': 'PLAYER_TURN_END',
+            'action': 'PLAYER_END_DICES',
         }
         self.send_message(response)
