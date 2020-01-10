@@ -13,16 +13,16 @@ class Turn:
         Game reference
     """
 
-    THROWING_DICES = 0
+    ROLLING_DICES = 0
     DUMMY_ACTION = 1
 
     def __init__(self, game):
         self.game = game
-        self.status = self.THROWING_DICES
+        self.status = self.ROLLING_DICES
         self.action_timeout = None
         self.action = -1
         self.actions = [
-            self.throwing_dices,
+            self.rolling_dices,
             self.dummy_action,
         ]
         self.actions_duration = [
@@ -32,7 +32,7 @@ class Turn:
 
     def turn_start(self, player):
         self.player = player
-        self.status = self.THROWING_DICES
+        self.status = self.ROLLING_DICES
         self.action = -1
         self.next_action()
 
@@ -43,9 +43,9 @@ class Turn:
         next_action = self.actions[self.action]
         next_action()
 
-    def throwing_dices(self):
+    def rolling_dices(self):
         timeout = self.actions_duration[self.action]
-        action = self.player.throw_dices
+        action = self.player.roll_dices
         self.action_timeout = asyncio.ensure_future(
             self.timeout_action(timeout, action))
 
