@@ -121,8 +121,8 @@ class Game:
         self.player_turn.set_turn()
         self.turn.turn_start(self.player_turn)
 
-    def player_throwed_dices(self, dices):
-        """ Invoked by the player when they throw dices.
+    def player_rolled_dices(self, dices):
+        """ Invoked by the player when they roll dices.
         Informs the server about the dices result
         """
         self.turn.dices_end()

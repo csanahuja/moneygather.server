@@ -14,6 +14,7 @@ class Turn:
     """
 
     THROWING_DICES = 0
+    DUMMY_ACTION = 1
 
     def __init__(self, game):
         self.game = game
@@ -54,6 +55,7 @@ class Turn:
         self.next_action()
 
     def dummy_action(self):
+        self.status = self.DUMMY_ACTION
         timeout = self.actions_duration[self.action]
         action = self.game.next_turn
         self.action_timeout = asyncio.ensure_future(

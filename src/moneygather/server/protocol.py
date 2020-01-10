@@ -64,7 +64,7 @@ class Protocol(WebSocketServerProtocol):
             'MESSAGE': self.chat_message_action,
             'PLAYER_STATUS': self.player_status_action,
             'PLAYER_UPDATED': self.player_updated_action,
-            'THROW_DICES': self.throw_dices_action,
+            'ROLL_DICES': self.roll_dices_action,
         }
         action = payload.get('action', False)
         action_method = switcher.get(action, self.default_action)
@@ -146,12 +146,11 @@ class Protocol(WebSocketServerProtocol):
         self.factory.send_game_event('PLAYER_UPDATED', player_updated_info)
         self.factory.send_player_list()
 
-    def throw_dices_action(self, payload):
-        """ Action handler when the player throws the dices.
+    def roll_dices_action(self, payload):
+        """ Action handler when the player rolls the dices.
         """
-        self.logger('info', 'Throwed dices')
-
-        self.player.throw_dices()
+        self.logger('info', 'Rolled dices')
+        self.player.roll_dices()
         # self.factory.next_turn()
 
     def send_message(self, message):
@@ -194,7 +193,7 @@ class Protocol(WebSocketServerProtocol):
         self.send_message(response)
 
     def send_player_end_dices(self):
-        """ Sends the player when he cannot throw dices.
+        """ Sends the player when he cannot roll dices.
         """
         response = {
             'action': 'PLAYER_END_DICES',
