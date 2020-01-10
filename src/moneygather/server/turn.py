@@ -46,20 +46,30 @@ class Turn:
     def rolling_dices(self):
         timeout = self.actions_duration[self.action]
         action = self.player.roll_dices
-        self.action_timeout = asyncio.ensure_future(
-            self.timeout_action(timeout, action))
+        self.action_timeout = self.start_timeout_task(timeout, action)
 
     def dices_end(self):
-        if self.action_timeout:
-            self.action_timeout.cancel()
+        self.end_timeout_task()
         self.next_action()
 
     def dummy_action(self):
         self.status = self.DUMMY_ACTION
         timeout = self.actions_duration[self.action]
         action = self.game.next_turn
-        self.action_timeout = asyncio.ensure_future(
+        self.action_timeout = self.start_timeout_task(timeout, action)
+
+    def end_turn(self):
+        self.end_timeout_task()
+
+    def start_timeout_task(self, timeout, action):
+        task = asyncio.ensure_future(
             self.timeout_action(timeout, action))
+        return task
+
+    def end_timeout_task(self):
+        if self.action_timeout:
+            self.action_timeout.cancel()
+            self.action_timeout = None
 
     async def timeout_action(self, timeout, action):
         try:
@@ -68,4 +78,4 @@ class Turn:
             if action:
                 action()
         except asyncio.CancelledError:
-            self.action_timeout = None
+            return

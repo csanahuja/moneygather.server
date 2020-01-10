@@ -46,11 +46,10 @@ class Game:
         self.players = []
         self.player_order = []
         self.player_turn = None
-        # self.turn.cancel_turn()
+        self.turn.end_turn()
 
     def add_player(self, player):
-        """ Adds the player to the list of players and sets a back reference
-        in the player.
+        """ Adds the player to the list of players.
         """
         if self.has_started():
             raise GameAlreadyStarted
@@ -60,12 +59,17 @@ class Game:
         self.players.append(player)
 
     def remove_player(self, player):
-        """ Removes the player from the list of players and unsets the back
+        """ Removes the player from the list of players or marks as disconnected
         reference.
         """
         self.players.remove(player)
         if not self.players:
             self.initialize_game()
+
+        if self.player_turn == player:
+            self.turn.end_turn()
+            self.next_turn()
+        self.player_order.remove(player)
 
     def has_started(self):
         """ Returns True if the game has started.
@@ -94,7 +98,7 @@ class Game:
         for player in self.players:
             player.set_awaiting_turn()
 
-        self.player_order = random.sample(self.players, self.num_players)
+        self.player_order = random.sample(self.players, len(self.players))
         self.server.start_game()
         self.next_turn()
 
@@ -105,7 +109,7 @@ class Game:
             return self.player_order[0]
 
         current_turn = self.player_order.index(self.player_turn)
-        next_turn = (current_turn + 1) % self.num_players
+        next_turn = (current_turn + 1) % len(self.player_order)
         next_player = self.player_order[next_turn]
         return next_player
 
