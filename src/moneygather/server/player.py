@@ -8,7 +8,7 @@ import uuid
 
 
 class Player:
-    """ A class to encapsulate the logic of a player
+    """ A class to encapsulate the logic of a player.
 
     Attributes
     ----------

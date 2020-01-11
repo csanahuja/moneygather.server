@@ -10,7 +10,7 @@ import random
 
 
 class Game:
-    """ A class to encapsulate the logic of the game
+    """ A class to encapsulate the logic of the game.
 
     Attributes
     ----------

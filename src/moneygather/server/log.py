@@ -37,7 +37,7 @@ sys.excepthook = handle_exception
 
 
 def log_exceptions(func):
-    """ Logs uncaught exceptions to the logger
+    """ Logs uncaught exceptions to the logger.
     """
     @functools.wraps(func)
     def wrapper_log_exceptions(*args, **kw):

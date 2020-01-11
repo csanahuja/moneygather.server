@@ -1,3 +1,6 @@
+"""
+Module: server
+"""
 from contextlib import suppress
 from moneygather.server.log import logger
 from moneygather.server.protocol import Protocol

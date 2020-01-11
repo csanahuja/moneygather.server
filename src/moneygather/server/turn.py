@@ -5,7 +5,7 @@ import asyncio
 
 
 class Turn:
-    """ A class to encapsulate the Turn of Player inside a Game
+    """ A class to encapsulate the Turn of Player inside a Game.
 
     Attributes
     ----------
