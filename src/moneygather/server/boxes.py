@@ -20,6 +20,20 @@ class Box:
         """
 
 
+class PaymentBox(Box):
+    """ Payment Box
+    """
+
+    def __init__(self, payment, **kwargs):
+        super().__init__(**kwargs)
+        self.payment = payment
+
+    def goes_throught(self, player):
+        """ Gets paid
+        """
+        raise NotADirectoryError
+
+
 class BuyableBox(Box):
     """ Buyable Box
     """
