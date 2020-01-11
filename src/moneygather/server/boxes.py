@@ -19,6 +19,15 @@ class Box:
         """ Implements what happens when you go in this box.
         """
 
+    def to_json(self):
+        """ Returns a json dict with basic attributes
+        """
+        box = {
+            'name': self.name,
+            'position': self.position
+        }
+        return box
+
 
 class PaymentBox(Box):
     """ Payment Box
@@ -33,6 +42,11 @@ class PaymentBox(Box):
         """
         raise NotADirectoryError
 
+    def to_json(self):
+        box = super().to_json()
+        box['payment'] = self.payment
+        return box
+
 
 class BuyableBox(Box):
     """ Buyable Box
@@ -45,6 +59,12 @@ class BuyableBox(Box):
 
     def buy(self, player):
         raise NotImplementedError
+
+    def to_json(self):
+        box = super().to_json()
+        box['price'] = self.price
+        box['owner'] = self.owner
+        return box
 
 
 class TownBox(BuyableBox):

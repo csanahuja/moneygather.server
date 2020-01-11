@@ -4,6 +4,7 @@ Module: game
 from moneygather.server.exceptions import GameAlreadyStarted
 from moneygather.server.exceptions import GameIsFull
 from moneygather.server.log import logger
+from moneygather.server.board import Board
 from moneygather.server.turn import Turn
 
 import random
@@ -34,6 +35,7 @@ class Game:
 
     def __init__(self, server, num_players=2):
         self.num_players = num_players
+        self.board = Board()
         self.turn = Turn(self)
         self.positions = 40
         self.server = server

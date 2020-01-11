@@ -120,9 +120,11 @@ class Factory(WebSocketServerFactory):
         """ Starts the game.
         """
         player_list = self.get_player_list()
+        board = self.game.board.to_json()
         response = {
             'action': 'GAME_STARTED',
             'player_list': player_list,
+            'board': board,
         }
         self.broadcast(response)
 

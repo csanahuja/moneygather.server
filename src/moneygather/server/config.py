@@ -66,7 +66,7 @@ BOARD_BOXES = [
     },
     {
         'position': 10,
-        'type': 'TownBox',
+        'type': 'Box',
         'name': 'Rest 1',
     },
     {
@@ -186,7 +186,6 @@ BOARD_BOXES = [
         'position': 30,
         'type': 'Box',
         'name': 'Rest 3',
-        'price': 200,
     },
     {
         'position': 31,
