@@ -18,6 +18,7 @@ class Turn:
 
     def __init__(self, game):
         self.game = game
+        self.player = None
         self.status = self.ROLLING_DICES
         self.action_timeout = None
         self.action = -1
@@ -59,6 +60,8 @@ class Turn:
 
     def end_turn(self):
         self.end_timeout_task()
+        if self.player:
+            self.player.client.send_player_end_dices()
 
     def start_timeout_task(self, timeout, action):
         task = asyncio.ensure_future(

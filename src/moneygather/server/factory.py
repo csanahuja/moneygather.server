@@ -48,7 +48,6 @@ class Factory(WebSocketServerFactory):
         """
         try:
             self.clients.remove(client)
-            self.game.remove_player(client.player)
         except ValueError:
             pass
         else:
@@ -57,6 +56,7 @@ class Factory(WebSocketServerFactory):
                 client.player.to_json(),
             )
             self.send_player_list()
+            self.game.remove_player(client.player)
 
     def broadcast(self, response):
         """ Encodes and sends the message to all clients
@@ -103,6 +103,24 @@ class Factory(WebSocketServerFactory):
         response = {
             'action': 'PLAYER_MOVEMENT',
             'position': player.position,
+            'uid': player.UID,
+        }
+        self.broadcast(response)
+
+    def send_player_bankrupt(self, player):
+        """ Sends a player bankrupt.
+        """
+        response = {
+            'action': 'PLAYER_BANKRUPT',
+            'uid': player.UID,
+        }
+        self.broadcast(response)
+
+    def send_player_winner(self, player):
+        """ Sends the winner player.
+        """
+        response = {
+            'action': 'PLAYER_WINNER',
             'uid': player.UID,
         }
         self.broadcast(response)

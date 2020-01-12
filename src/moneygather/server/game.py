@@ -61,17 +61,10 @@ class Game:
         self.players.append(player)
 
     def remove_player(self, player):
-        """ Removes the player from the list of players or marks as disconnected
-        reference.
+        """ Sets the player as bankrupted and ends the turn if his turn
+        was the current turn.
         """
-        self.players.remove(player)
-        if not self.players:
-            self.initialize_game()
-
-        if self.player_turn == player:
-            self.turn.end_turn()
-            self.next_turn()
-        self.player_order.remove(player)
+        player.set_bankrupt()
 
     def has_started(self):
         """ Returns True if the game has started.
@@ -139,3 +132,43 @@ class Game:
         Informs the server about the movement
         """
         self.server.send_player_movement(player)
+
+    def player_bankrupted(self, player):
+        """ Invoked by the players when they bankrupt or by game when
+        player disconnects.
+        Informs the server the player bannkrupted and performs end of game
+        if required
+        """
+        self.server.send_player_bankrupt(player)
+        players_bankrupted = self.num_players_bankrupt()
+
+        if players_bankrupted == len(self.players):
+            self.initialize_game()
+            return
+
+        if players_bankrupted == len(self.players) - 1:
+            self.turn.end_turn()
+            winner = self.get_winner()
+            self.server.send_player_winner(winner)
+            return
+
+        if self.player_turn == player:
+            self.turn.end_turn()
+            self.next_turn()
+
+    def num_players_bankrupt(self):
+        num_players = 0
+        for player in self.players:
+            if player.is_bankrupted():
+                num_players += 1
+        return num_players
+
+    def get_winner(self):
+        """ Returns first player non bankrupted which is the winner.
+        This funcion will only be called when the rest of players have
+        bankrupted.
+        """
+        for player in self.players:
+            if not player.is_bankrupted():
+                return player
+        return None

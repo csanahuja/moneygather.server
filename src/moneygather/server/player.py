@@ -46,6 +46,8 @@ class Player:
     PLAYER_READY = 1
     PLAYER_AWAITING_TURN = 2
     PLAYER_TURN = 3
+    PLAYER_FREEZED = 4
+    PLAYER_BANKRUPT = 5
 
     def __init__(
         self,
@@ -136,6 +138,11 @@ class Player:
             return True
         return self.status == self.PLAYER_READY
 
+    def is_bankrupted(self):
+        """ Returns if the player is bankrupted.
+        """
+        return self.status == self.PLAYER_BANKRUPT
+
     def set_ready(self):
         """ Changes the player status to ready.
         """
@@ -154,6 +161,8 @@ class Player:
     def set_awaiting_turn(self):
         """ Changes the player status to awaiting turn.
         """
+        if self.status == self.PLAYER_BANKRUPT:
+            return
         if self.status == self.PLAYER_AWAITING_TURN:
             return
         self.status = self.PLAYER_AWAITING_TURN
@@ -166,6 +175,14 @@ class Player:
             return
         self.status = self.PLAYER_TURN
         self.client.send_player_turn(10)
+
+    def set_bankrupt(self):
+        """ Changes the player status to bankrupt.
+        """
+        if self.status == self.PLAYER_BANKRUPT:
+            return
+        self.status = self.PLAYER_BANKRUPT
+        self.game.player_bankrupted(self)
 
     def roll_dices(self):
         """ Rolls dices. Generates two random numbers from 1-6.
