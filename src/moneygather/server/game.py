@@ -64,7 +64,10 @@ class Game:
         """ Sets the player as bankrupted and ends the turn if his turn
         was the current turn.
         """
-        player.set_bankrupt()
+        if self.has_started():
+            player.set_bankrupt()
+        else:
+            self.players.remove(player)
 
     def has_started(self):
         """ Returns True if the game has started.
