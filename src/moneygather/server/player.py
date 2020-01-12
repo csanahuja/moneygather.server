@@ -20,8 +20,8 @@ class Player:
         Game reference
     client : client class
         Client reference
-    credit: int
-        Credit of the player
+    money: int
+        Money of the player
     position: int
         Position of the player in the board
     random: boolean
@@ -51,14 +51,14 @@ class Player:
         self,
         client,
         game,
-        credit=1000,
+        money=1000,
         random=True,
     ):
         self.UID = str(uuid.uuid4())
         self.status = self.PLAYER_NOT_READY
         self.game = game
         self.client = client
-        self.credit = credit
+        self.money = money
         self.position = 0
         self.name = self.default_name()
         if random:
@@ -106,6 +106,7 @@ class Player:
             'gender': self.gender,
             'uid': self.UID,
             'position': self.position,
+            'money': self.money,
             'ready': self.is_ready(),
         }
         return player

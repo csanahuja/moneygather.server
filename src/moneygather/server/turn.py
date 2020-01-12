@@ -14,7 +14,7 @@ class Turn:
     """
 
     ROLLING_DICES = 0
-    DUMMY_ACTION = 1
+    MOVEMENT = 1
 
     def __init__(self, game):
         self.game = game
@@ -22,13 +22,11 @@ class Turn:
         self.action_timeout = None
         self.action = -1
         self.actions = [
-            self.rolling_dices,
-            self.dummy_action,
+            self.rolling_dices_step,
+            self.movement_step,
         ]
-        self.actions_duration = [
-            5,
-            5,
-        ]
+        self.dices_timeout = 5
+        self.movement_timeout = 7
 
     def turn_start(self, player):
         self.player = player
@@ -43,18 +41,19 @@ class Turn:
         next_action = self.actions[self.action]
         next_action()
 
-    def rolling_dices(self):
-        timeout = self.actions_duration[self.action]
+    def rolling_dices_step(self):
+        timeout = self.dices_timeout
         action = self.player.roll_dices
         self.action_timeout = self.start_timeout_task(timeout, action)
 
-    def dices_end(self):
+    def dices_end(self, dices):
         self.end_timeout_task()
+        self.movement_timeout = (dices[0] + dices[1]) * 0.5 + 1
         self.next_action()
 
-    def dummy_action(self):
-        self.status = self.DUMMY_ACTION
-        timeout = self.actions_duration[self.action]
+    def movement_step(self):
+        self.status = self.MOVEMENT
+        timeout = self.movement_timeout
         action = self.game.next_turn
         self.action_timeout = self.start_timeout_task(timeout, action)
 

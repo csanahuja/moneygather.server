@@ -131,7 +131,7 @@ class Game:
         """ Invoked by the player when they roll dices.
         Informs the server about the dices result
         """
-        self.turn.dices_end()
+        self.turn.dices_end(dices)
         self.server.send_dices_result(dices)
 
     def player_moved(self, player):
