@@ -4,6 +4,7 @@ Module: protocol
 from autobahn.asyncio.websocket import WebSocketServerProtocol
 from moneygather.server.log import logger
 from moneygather.server.log import log_exceptions
+from moneygather.server.utils import remove_html_tags
 
 import json
 
@@ -97,6 +98,10 @@ class Protocol(WebSocketServerProtocol):
         """
         self.logger('info', 'Chat message')
         message = payload['message']
+        message = message.strip()
+        if not message:
+            return
+        message = remove_html_tags(message)
         self.send_chat_message(message)
 
     def player_status_action(self, payload):
