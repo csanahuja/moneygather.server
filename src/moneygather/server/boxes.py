@@ -14,6 +14,7 @@ class Box:
     def goes_throught(self, player):
         """ Implements what happens when you go throught this box.
         """
+        player.set_money(-30)
 
     def goes_in(self, player):
         """ Implements what happens when you go in this box.
@@ -40,7 +41,7 @@ class PaymentBox(Box):
     def goes_throught(self, player):
         """ Gets paid
         """
-        raise NotADirectoryError
+        # raise NotImplementedError
 
     def to_json(self):
         box = super().to_json()

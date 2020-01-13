@@ -38,6 +38,9 @@ class Board:
         if box_type == 'Box':
             return Box(**box)
 
+    def get_box(self, index):
+        return self.boxes.get(index)
+
     def to_json(self):
         board = dict()
         for position, box in self.boxes.items():

@@ -33,7 +33,7 @@ class Game:
     GAME_STARTING = 1
     GAME_STARTED = 2
 
-    def __init__(self, server, num_players=2):
+    def __init__(self, server, num_players=4):
         self.num_players = num_players
         self.board = Board()
         self.turn = Turn(self)
@@ -100,16 +100,19 @@ class Game:
         self.server.start_game()
         self.next_turn()
 
-    def get_next_player_turn(self):
+    def set_next_player_turn(self):
         """ Sets next player.
         """
         if not self.player_turn:
-            return self.player_order[0]
+            self.player_turn = self.player_order[0]
+            return
 
         current_turn = self.player_order.index(self.player_turn)
         next_turn = (current_turn + 1) % len(self.player_order)
         next_player = self.player_order[next_turn]
-        return next_player
+        self.player_turn = next_player
+        if next_player.is_bankrupted():
+            self.set_next_player_turn()
 
     def next_turn(self):
         """ Sets next turn.
@@ -119,7 +122,7 @@ class Game:
         if self.player_turn:
             self.player_turn.set_awaiting_turn()
 
-        self.player_turn = self.get_next_player_turn()
+        self.set_next_player_turn()
         self.player_turn.set_turn()
         self.turn.turn_start(self.player_turn)
 
@@ -135,6 +138,12 @@ class Game:
         Informs the server about the movement
         """
         self.server.send_player_movement(player)
+
+    def player_money(self, player):
+        """ Invoked by the players when their money change.
+        Informs the server about the money of a player
+        """
+        self.server.send_player_money(player)
 
     def player_bankrupted(self, player):
         """ Invoked by the players when they bankrupt or by game when

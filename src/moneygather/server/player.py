@@ -198,5 +198,21 @@ class Player:
         """ Moves the player from current position to `position + movement`
         position.
         """
-        self.position = (self.position + movement) % self.game.positions
+        next_position = self.position
+
+        for mov in range(movement):
+            next_position += 1
+            if next_position == self.game.positions:
+                next_position = 0
+
+            box = self.game.board.get_box(next_position)
+            box.goes_throught(self)
+
+        self.position = next_position
+        self.game.player_money(self)
         self.game.player_moved(self)
+
+    def set_money(self, money):
+        self.money += money
+        if self.money < 0:
+            self.set_bankrupt()

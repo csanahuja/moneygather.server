@@ -107,6 +107,16 @@ class Factory(WebSocketServerFactory):
         }
         self.broadcast(response)
 
+    def send_player_money(self, player):
+        """ Sends a player money.
+        """
+        response = {
+            'action': 'PLAYER_MONEY',
+            'money': player.money,
+            'uid': player.UID,
+        }
+        self.broadcast(response)
+
     def send_player_bankrupt(self, player):
         """ Sends a player bankrupt.
         """
