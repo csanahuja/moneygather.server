@@ -1,6 +1,7 @@
 """
 Module: boxes
 """
+from moneygather.server.log import logger
 
 
 class Box:
@@ -14,11 +15,14 @@ class Box:
     def goes_throught(self, player):
         """ Implements what happens when you go throught this box.
         """
-        player.set_money(-30)
 
     def goes_in(self, player):
         """ Implements what happens when you go in this box.
         """
+        logger.debug(
+            'BOX ==> Player UID:'
+            f'{player.UID} goes in: {self.position}'
+        )
 
     def to_json(self):
         """ Returns a json dict with basic attributes
@@ -41,7 +45,7 @@ class PaymentBox(Box):
     def goes_throught(self, player):
         """ Gets paid
         """
-        # raise NotImplementedError
+        player.add_money(1000)
 
     def to_json(self):
         box = super().to_json()

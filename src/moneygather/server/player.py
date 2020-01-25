@@ -3,6 +3,7 @@ Module: player
 """
 from moneygather.server.exceptions import PlayerNoUpdatableAttribute
 
+import asyncio
 import random
 import uuid
 
@@ -46,8 +47,9 @@ class Player:
     PLAYER_READY = 1
     PLAYER_AWAITING_TURN = 2
     PLAYER_TURN = 3
-    PLAYER_FREEZED = 4
-    PLAYER_BANKRUPT = 5
+    PLAYER_MOVING = 4
+    PLAYER_FREEZED = 5
+    PLAYER_BANKRUPT = 6
 
     def __init__(
         self,
@@ -192,27 +194,39 @@ class Player:
 
         self.client.send_player_end_dices()
         self.game.player_rolled_dices([dice1, dice2])
-        self.move(dice1 + dice2)
+        asyncio.ensure_future(self.move(dice1 + dice2))
 
-    def move(self, movement):
+    async def move(self, movement):
         """ Moves the player from current position to `position + movement`
         position.
         """
         next_position = self.position
+        self.position = (next_position + movement) % self.game.positions
+        self.game.player_moved(self)
 
+        box = None
         for mov in range(movement):
             next_position += 1
             if next_position == self.game.positions:
                 next_position = 0
 
             box = self.game.board.get_box(next_position)
+            await self.move_position(box)
+
+        box.goes_in(self)
+
+    async def move_position(self, box):
+        try:
+            await asyncio.sleep(0.5)
             box.goes_throught(self)
+        except asyncio.CancelledError:
+            return
 
-        self.position = next_position
-        self.game.player_money(self)
-        self.game.player_moved(self)
-
-    def set_money(self, money):
+    def add_money(self, money):
+        """ Add the money value to the current money, can be negative
+        value.
+        """
         self.money += money
         if self.money < 0:
             self.set_bankrupt()
+        self.game.player_money(self, money)

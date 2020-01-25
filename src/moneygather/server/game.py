@@ -33,7 +33,7 @@ class Game:
     GAME_STARTING = 1
     GAME_STARTED = 2
 
-    def __init__(self, server, num_players=4):
+    def __init__(self, server, num_players=2):
         self.num_players = num_players
         self.board = Board()
         self.turn = Turn(self)
@@ -66,7 +66,7 @@ class Game:
         """
         if self.has_started():
             player.set_bankrupt()
-        else:
+        elif player in self.players:
             self.players.remove(player)
 
     def has_started(self):
@@ -139,11 +139,11 @@ class Game:
         """
         self.server.send_player_movement(player)
 
-    def player_money(self, player):
+    def player_money(self, player, money):
         """ Invoked by the players when their money change.
         Informs the server about the money of a player
         """
-        self.server.send_player_money(player)
+        self.server.send_player_money(player, money)
 
     def player_bankrupted(self, player):
         """ Invoked by the players when they bankrupt or by game when
