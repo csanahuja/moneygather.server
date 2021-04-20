@@ -1,2 +1,2 @@
-autobahn==19.11.1
+autobahn==20.12.3
 pre-commit==1.20.0
